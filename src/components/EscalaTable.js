@@ -74,12 +74,10 @@ const EscalaTable = ({ analistas, turnos, folgasManuais, onAnalistaAdd, onTurnoM
                             )}
                             <td className="analista" style={{ backgroundColor: turnos[turnoNome]?.cor || 'var(--btn-primary-bg)' }}>
                                 {analista.nome}
-                                {isUserAdmin && (
-                                    <div className="action-buttons" data-html2canvas-ignore="true">
-                                        <button onClick={() => onEditAnalista(analista)} title="Editar"><i className="fa-solid fa-pen-to-square"></i></button>
-                                        <button onClick={() => onDeleteAnalista(analista.id)} title="Excluir"><i className="fa-solid fa-trash-can"></i></button>
-                                    </div>
-                                )}
+                                <div className="action-buttons" data-html2canvas-ignore="true">
+                                    <button onClick={() => onEditAnalista(analista)} title="Editar"><i className="fa-solid fa-pen-to-square"></i></button>
+                                    <button onClick={() => onDeleteAnalista(analista.id)} title="Excluir"><i className="fa-solid fa-trash-can"></i></button>
+                                </div>
                             </td>
                             {Array.from({ length: 10 }, (_, i) => {
                                 const dia = diaInicio + i;
@@ -189,29 +187,43 @@ const EscalaTable = ({ analistas, turnos, folgasManuais, onAnalistaAdd, onTurnoM
             a.click();
             document.body.removeChild(a);
             URL.revokeObjectURL(url);
-            alert('Escala exportada para Excel!');
+            showToastMessage('Escala exportada para Excel!', 'fa-file-excel');
         } else if (format === 'pdf') {
             const pdf = new jsPDF('l', 'mm', 'a4');
             const elements = container.querySelectorAll('.table-wrap, .semana-title');
+            
             let promiseChain = Promise.resolve();
+
             elements.forEach((el, index) => {
-                promiseChain = promiseChain.then(() => new Promise(resolve => {
-                    html2canvas(el, { scale: 1.5, useCORS: true, logging: false }).then(canvas => {
+                promiseChain = promiseChain.then(() => {
+                    const clone = el.cloneNode(true);
+                    // Garante que o clone é visível para o html2canvas
+                    clone.style.display = 'block';
+                    clone.style.position = 'absolute';
+                    clone.style.left = '-9999px';
+                    document.body.appendChild(clone);
+
+                    return html2canvas(clone, { scale: 1.5, useCORS: true, logging: false }).then(canvas => {
                         const imgData = canvas.toDataURL('image/jpeg', 1.0);
                         const imgWidth = 280;
                         const imgHeight = canvas.height * imgWidth / canvas.width;
                         if (index > 0) pdf.addPage();
                         pdf.addImage(imgData, 'JPEG', 10, 10, imgWidth, imgHeight);
-                        resolve();
+                        document.body.removeChild(clone);
                     }).catch(err => {
                         console.error("Erro ao renderizar para PDF:", err);
-                        resolve();
+                        document.body.removeChild(clone);
+                        return Promise.reject(err);
                     });
-                }));
+                });
             });
+
             promiseChain.then(() => {
                 pdf.save(nomeArquivo);
-                alert('Escala exportada para PDF!');
+                showToastMessage('Escala exportada para PDF!', 'fa-file-pdf');
+                setIsExportModalOpen(false);
+            }).catch(() => {
+                 showToastMessage('Erro ao exportar PDF. Tente novamente.', 'fa-exclamation-circle', true);
             });
         }
         setIsExportModalOpen(false);
@@ -225,20 +237,16 @@ const EscalaTable = ({ analistas, turnos, folgasManuais, onAnalistaAdd, onTurnoM
                     <div className="input-group-mes">
                         <i className="fa-solid fa-calendar-day icon-mes"></i>
                         <input type="month" id="mes" value={mes} onChange={e => setMes(e.target.value)} />
-                        {isUserAdmin && (
                              <button className="btn primary btn-gerar" onClick={generateTables}>
                                 <i className="fa-solid fa-calendar-plus"></i> Gerar
                             </button>
-                        )}
                     </div>
                 </div>
                 <div className="page-actions">
-                    {isUserAdmin && (
                         <>
                             <button id="btnAdicionar" className="btn" onClick={onAnalistaAdd}><i className="fa-solid fa-user-plus"></i> Analista</button>
                             <button id="btnGerenciarTurnos" className="btn" onClick={onTurnoManage}><i className="fa-solid fa-clock"></i> Turnos</button>
                         </>
-                    )}
                     <button id="btnExportar" className="btn" onClick={() => setIsExportModalOpen(true)}><i className="fa-solid fa-download"></i> Exportar</button>
                 </div>
             </div>

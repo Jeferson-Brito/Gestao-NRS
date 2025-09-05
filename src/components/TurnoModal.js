@@ -14,7 +14,6 @@ const TurnoModal = ({ turnos, onSave, onDelete, onReorder, onCancel, user }) => 
   }, [turnos]);
 
   const handleEdit = (turnoNome) => {
-    if (!isUserAdmin) return;
     const turno = turnos[turnoNome];
     setOriginalName(turnoNome);
     setNome(turnoNome);
@@ -24,7 +23,6 @@ const TurnoModal = ({ turnos, onSave, onDelete, onReorder, onCancel, user }) => 
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    if (!isUserAdmin) return;
     onSave({
       originalName,
       name: nome,
@@ -41,7 +39,6 @@ const TurnoModal = ({ turnos, onSave, onDelete, onReorder, onCancel, user }) => 
 
   const handleDrop = (e, droppedOnName) => {
     e.preventDefault();
-    if (!isUserAdmin) return;
     const draggedName = e.dataTransfer.getData('turnoName');
     const newOrder = [...draggableTurnos];
     const draggedIndex = newOrder.indexOf(draggedName);
@@ -60,7 +57,6 @@ const TurnoModal = ({ turnos, onSave, onDelete, onReorder, onCancel, user }) => 
   };
   
   const handleDragStart = (e, turnoName) => {
-    if (!isUserAdmin) return;
     e.dataTransfer.setData('turnoName', turnoName);
   };
 
@@ -74,27 +70,24 @@ const TurnoModal = ({ turnos, onSave, onDelete, onReorder, onCancel, user }) => 
               <th>Turno</th>
               <th>Horário</th>
               <th>Cor</th>
-              {isUserAdmin && <th>Ações</th>}
+              <th>Ações</th>
             </tr>
           </thead>
           <tbody onDragOver={handleDragOver}>
             {draggableTurnos.map(turnoName => (
-              <tr key={turnoName} draggable={isUserAdmin} onDragStart={(e) => handleDragStart(e, turnoName)} onDrop={(e) => handleDrop(e, turnoName)}>
+              <tr key={turnoName} draggable={true} onDragStart={(e) => handleDragStart(e, turnoName)} onDrop={(e) => handleDrop(e, turnoName)}>
                 <td>{turnoName}</td>
                 <td>{turnos[turnoName].horario}</td>
                 <td><div className="color-swatch" style={{ backgroundColor: turnos[turnoName].cor }}></div></td>
-                {isUserAdmin && (
-                    <td>
-                        <button className="edit-turno-btn" onClick={() => handleEdit(turnoName)}><i className="fa-solid fa-pen-to-square"></i></button>
-                        <button className="delete-turno-btn" onClick={() => onDelete(turnoName)}><i className="fa-solid fa-trash-can"></i></button>
-                    </td>
-                )}
+                <td>
+                    <button className="edit-turno-btn" onClick={() => handleEdit(turnoName)}><i className="fa-solid fa-pen-to-square"></i></button>
+                    <button className="delete-turno-btn" onClick={() => onDelete(turnoName)}><i className="fa-solid fa-trash-can"></i></button>
+                </td>
               </tr>
             ))}
           </tbody>
         </table>
       </div>
-      {isUserAdmin && (
           <>
             <h3>{originalName ? 'Editar Turno' : 'Adicionar Turno'}</h3>
             <form id="turno-form" className="form-horizontal" onSubmit={handleSubmit}>
@@ -116,7 +109,6 @@ const TurnoModal = ({ turnos, onSave, onDelete, onReorder, onCancel, user }) => 
               </div>
             </form>
           </>
-      )}
     </>
   );
 };
