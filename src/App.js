@@ -5,6 +5,7 @@ import EscalaTable from './components/EscalaTable';
 import CalendarComponent from './components/Calendar';
 import KnowledgeBase from './components/KnowledgeBase';
 import Modal from './components/Modal';
+import AnalystManagementModal from './components/AnalystManagementModal';
 import AnalistaForm from './components/AnalistaForm';
 import TurnoModal from './components/TurnoModal';
 import EventoForm from './components/EventoForm';
@@ -45,6 +46,9 @@ const App = () => {
     };
     
     const [user, setUser] = useState(getInitialUser());
+    const [isAnalystManagementModalOpen, setIsAnalystManagementModalOpen] = useState(false);
+    const [isAnalistaModalOpen, setIsAnalistaModalOpen] = useState(false);
+    const [editingAnalista, setEditingAnalista] = useState(null);
     
     const API_URL = 'http://localhost:3001/api';
 
@@ -94,13 +98,10 @@ const App = () => {
         fetchData();
     }, [user]);
 
-    const [isAnalistaModalOpen, setIsAnalistaModalOpen] = useState(false);
     const [isTurnoModalOpen, setIsTurnoModalOpen] = useState(false);
     const [isEventoModalOpen, setIsEventoModalOpen] = useState(false);
     const [isSettingsModalOpen, setIsSettingsModalOpen] = useState(false);
     const [isForgotPasswordModalOpen, setIsForgotPasswordModalOpen] = useState(false);
-
-    const [editingAnalista, setEditingAnalista] = useState(null);
     const [editingEvento, setEditingEvento] = useState(null);
 
     const showToastMessage = useCallback((message, icon, isError = false) => {
@@ -317,7 +318,7 @@ const App = () => {
 
     const query = new URLSearchParams(window.location.search);
     const resetToken = query.get('token');
-    const [isResetPasswordModalOpen, setIsResetPasswordModalOpen] = useState(!!resetToken);
+    const [isResetPasswordModalOpen, setIsResetPasswordModal] = useState(!!resetToken);
 
     if (resetToken && !user) {
       return (
@@ -325,7 +326,7 @@ const App = () => {
           show={isResetPasswordModalOpen}
           token={resetToken}
           onClose={() => {
-            setIsResetPasswordModalOpen(false);
+            setIsResetPasswordModal(false);
             window.history.replaceState({}, document.title, window.location.pathname);
           }}
         />
@@ -348,10 +349,8 @@ const App = () => {
                     analistas={data.analistas}
                     turnos={data.turnos}
                     folgasManuais={data.folgasManuais}
-                    onAnalistaAdd={isUserAdmin ? () => { setEditingAnalista(null); setIsAnalistaModalOpen(true); } : null}
-                    onTurnoManage={isUserAdmin ? () => setIsTurnoModalOpen(true) : null}
-                    onEditAnalista={isUserAdmin ? (analista) => { setEditingAnalista(analista); setIsAnalistaModalOpen(true); } : null}
-                    onDeleteAnalista={isUserAdmin ? handleDeleteAnalista : null}
+                    onManageAnalysts={() => setIsAnalystManagementModalOpen(true)}
+                    onTurnoManage={() => setIsTurnoModalOpen(true)}
                     onSaveFolgaManual={isUserAdmin ? handleSaveFolgaManual : null}
                     user={user}
                     showToastMessage={showToastMessage}
@@ -424,6 +423,16 @@ const App = () => {
             <SettingsModal show={isSettingsModalOpen} onClose={() => setIsSettingsModalOpen(false)} onToggleTheme={handleToggleTheme} theme={theme} />
             
             <Toast show={showToast} message={toastMessage} icon={toastIcon} isError={isToastError} />
+
+            {/* Novo modal para gerenciar analistas */}
+            <AnalystManagementModal
+                show={isAnalystManagementModalOpen}
+                onClose={() => setIsAnalystManagementModalOpen(false)}
+                analysts={data.analistas}
+                turnos={data.turnos}
+                onSave={handleAddOrEditAnalista}
+                onDelete={handleDeleteAnalista}
+            />
         </div>
     );
 };

@@ -1,17 +1,12 @@
 import React, { useState, useEffect } from 'react';
 
-const TurnoModal = ({ turnos, onSave, onDelete, onReorder, onCancel, user }) => {
+const TurnoModal = ({ turnos, onSave, onDelete, onReorder, onCancel }) => {
   const [nome, setNome] = useState('');
   const [horario, setHorario] = useState('');
   const [cor, setCor] = useState('#1f4e79');
   const [originalName, setOriginalName] = useState(null);
-  const [draggableTurnos, setDraggableTurnos] = useState(Object.keys(turnos).sort((a, b) => turnos[a].ordem - turnos[b].ordem));
 
-  const isUserAdmin = user && user.role === 'admin';
-
-  useEffect(() => {
-    setDraggableTurnos(Object.keys(turnos).sort((a, b) => turnos[a].ordem - turnos[b].ordem));
-  }, [turnos]);
+  const turnosOrdenados = Object.keys(turnos).sort((a, b) => turnos[a].ordem - turnos[b].ordem);
 
   const handleEdit = (turnoNome) => {
     const turno = turnos[turnoNome];
@@ -40,7 +35,7 @@ const TurnoModal = ({ turnos, onSave, onDelete, onReorder, onCancel, user }) => 
   const handleDrop = (e, droppedOnName) => {
     e.preventDefault();
     const draggedName = e.dataTransfer.getData('turnoName');
-    const newOrder = [...draggableTurnos];
+    const newOrder = [...turnosOrdenados];
     const draggedIndex = newOrder.indexOf(draggedName);
     const droppedIndex = newOrder.indexOf(droppedOnName);
 
@@ -48,7 +43,6 @@ const TurnoModal = ({ turnos, onSave, onDelete, onReorder, onCancel, user }) => 
 
     const [removed] = newOrder.splice(draggedIndex, 1);
     newOrder.splice(droppedIndex, 0, removed);
-    setDraggableTurnos(newOrder);
     onReorder(newOrder);
   };
   
@@ -74,11 +68,11 @@ const TurnoModal = ({ turnos, onSave, onDelete, onReorder, onCancel, user }) => 
             </tr>
           </thead>
           <tbody onDragOver={handleDragOver}>
-            {draggableTurnos.map(turnoName => (
+            {turnosOrdenados.map(turnoName => (
               <tr key={turnoName} draggable={true} onDragStart={(e) => handleDragStart(e, turnoName)} onDrop={(e) => handleDrop(e, turnoName)}>
                 <td>{turnoName}</td>
-                <td>{turnos[turnoName].horario}</td>
-                <td><div className="color-swatch" style={{ backgroundColor: turnos[turnoName].cor }}></div></td>
+                <td>{turnos[turnoName]?.horario || ''}</td>
+                <td><div className="color-swatch" style={{ backgroundColor: turnos[turnoName]?.cor || '#1f4e79' }}></div></td>
                 <td>
                     <button className="edit-turno-btn" onClick={() => handleEdit(turnoName)}><i className="fa-solid fa-pen-to-square"></i></button>
                     <button className="delete-turno-btn" onClick={() => onDelete(turnoName)}><i className="fa-solid fa-trash-can"></i></button>

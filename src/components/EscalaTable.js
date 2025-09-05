@@ -1,11 +1,11 @@
 // src/components/EscalaTable.js
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { jsPDF } from 'jspdf';
 import html2canvas from 'html2canvas';
 import Modal from './Modal';
-import EditEscalaModal from './EditEscalaModal'; // Importando o novo componente
+import EditEscalaModal from './EditEscalaModal';
 
-const EscalaTable = ({ analistas, turnos, folgasManuais, onAnalistaAdd, onTurnoManage, onEditAnalista, onDeleteAnalista, onSaveFolgaManual, user, showToastMessage }) => {
+const EscalaTable = ({ analistas, turnos, folgasManuais, onManageAnalysts, onTurnoManage, onSaveFolgaManual, user, showToastMessage }) => {
     const [mes, setMes] = useState('');
     const [tabelas, setTabelas] = useState(null);
     const [showWelcome, setShowWelcome] = useState(true);
@@ -14,6 +14,7 @@ const EscalaTable = ({ analistas, turnos, folgasManuais, onAnalistaAdd, onTurnoM
     const [editingCellData, setEditingCellData] = useState(null);
 
     const isUserAdmin = user && user.role === 'admin';
+    const tabelasRef = useRef(null); // Usando useRef para referenciar a div de tabelas
 
     const generateTables = () => {
         if (!mes) return;
@@ -33,9 +34,6 @@ const EscalaTable = ({ analistas, turnos, folgasManuais, onAnalistaAdd, onTurnoM
             semana++;
         }
         setTabelas(newTables);
-        if (showToastMessage) {
-            showToastMessage('Escala gerada com sucesso!', 'fa-calendar-check');
-        }
     };
 
     useEffect(() => {
@@ -74,10 +72,6 @@ const EscalaTable = ({ analistas, turnos, folgasManuais, onAnalistaAdd, onTurnoM
                             )}
                             <td className="analista" style={{ backgroundColor: turnos[turnoNome]?.cor || 'var(--btn-primary-bg)' }}>
                                 {analista.nome}
-                                <div className="action-buttons" data-html2canvas-ignore="true">
-                                    <button onClick={() => onEditAnalista(analista)} title="Editar"><i className="fa-solid fa-pen-to-square"></i></button>
-                                    <button onClick={() => onDeleteAnalista(analista.id)} title="Excluir"><i className="fa-solid fa-trash-can"></i></button>
-                                </div>
                             </td>
                             {Array.from({ length: 10 }, (_, i) => {
                                 const dia = diaInicio + i;
@@ -169,7 +163,7 @@ const EscalaTable = ({ analistas, turnos, folgasManuais, onAnalistaAdd, onTurnoM
         }
 
         const nomeArquivo = `escala-${mes || "mes"}.${format}`;
-        const container = document.getElementById("tabelas");
+        const container = tabelasRef.current; // Referência para a div de tabelas
 
         if (format === 'xls') {
             const htmlContent = `
@@ -189,42 +183,46 @@ const EscalaTable = ({ analistas, turnos, folgasManuais, onAnalistaAdd, onTurnoM
             URL.revokeObjectURL(url);
             showToastMessage('Escala exportada para Excel!', 'fa-file-excel');
         } else if (format === 'pdf') {
-            const pdf = new jsPDF('l', 'mm', 'a4');
-            const elements = container.querySelectorAll('.table-wrap, .semana-title');
-            
-            let promiseChain = Promise.resolve();
+             const pdf = new jsPDF('l', 'mm', 'a4');
+             const pageHeight = pdf.internal.pageSize.getHeight();
+             let y = 10; // Posição inicial no eixo Y
 
-            elements.forEach((el, index) => {
-                promiseChain = promiseChain.then(() => {
-                    const clone = el.cloneNode(true);
-                    // Garante que o clone é visível para o html2canvas
-                    clone.style.display = 'block';
-                    clone.style.position = 'absolute';
-                    clone.style.left = '-9999px';
-                    document.body.appendChild(clone);
+             const elements = Array.from(container.children);
 
-                    return html2canvas(clone, { scale: 1.5, useCORS: true, logging: false }).then(canvas => {
-                        const imgData = canvas.toDataURL('image/jpeg', 1.0);
-                        const imgWidth = 280;
-                        const imgHeight = canvas.height * imgWidth / canvas.width;
-                        if (index > 0) pdf.addPage();
-                        pdf.addImage(imgData, 'JPEG', 10, 10, imgWidth, imgHeight);
-                        document.body.removeChild(clone);
-                    }).catch(err => {
-                        console.error("Erro ao renderizar para PDF:", err);
-                        document.body.removeChild(clone);
-                        return Promise.reject(err);
-                    });
-                });
-            });
+             const processElements = (index) => {
+                 if (index >= elements.length) {
+                     pdf.save(nomeArquivo);
+                     showToastMessage('Escala exportada para PDF!', 'fa-file-pdf');
+                     setIsExportModalOpen(false);
+                     return Promise.resolve();
+                 }
+                 const el = elements[index];
+                 return html2canvas(el, {
+                     scale: 1.5,
+                     useCORS: true,
+                     logging: false,
+                     ignoreElements: (element) => element.getAttribute('data-html2canvas-ignore') === 'true'
+                 }).then(canvas => {
+                     const imgData = canvas.toDataURL('image/jpeg', 1.0);
+                     const imgHeight = canvas.height * 200 / canvas.width; // Redimensionar para largura de 200mm
 
-            promiseChain.then(() => {
-                pdf.save(nomeArquivo);
-                showToastMessage('Escala exportada para PDF!', 'fa-file-pdf');
-                setIsExportModalOpen(false);
-            }).catch(() => {
+                     if (y + imgHeight > pageHeight) {
+                         pdf.addPage();
+                         y = 10;
+                     }
+
+                     pdf.addImage(imgData, 'JPEG', 5, y, 200, imgHeight);
+                     y += imgHeight + 10; // Adiciona um espaçamento de 10mm entre os elementos
+
+                     return processElements(index + 1);
+                 });
+             };
+
+             processElements(0).catch(err => {
+                 console.error("Erro ao renderizar para PDF:", err);
                  showToastMessage('Erro ao exportar PDF. Tente novamente.', 'fa-exclamation-circle', true);
-            });
+                 setIsExportModalOpen(false);
+             });
         }
         setIsExportModalOpen(false);
     };
@@ -237,18 +235,18 @@ const EscalaTable = ({ analistas, turnos, folgasManuais, onAnalistaAdd, onTurnoM
                     <div className="input-group-mes">
                         <i className="fa-solid fa-calendar-day icon-mes"></i>
                         <input type="month" id="mes" value={mes} onChange={e => setMes(e.target.value)} />
-                             <button className="btn primary btn-gerar" onClick={generateTables}>
-                                <i className="fa-solid fa-calendar-plus"></i> Gerar
-                            </button>
+                        <button className="btn primary btn-gerar" onClick={() => { generateTables(); showToastMessage('Escala gerada com sucesso!', 'fa-calendar-check'); }}>
+                            <i className="fa-solid fa-calendar-plus"></i> Gerar
+                        </button>
                     </div>
                 </div>
-                <div className="page-actions">
-                        <>
-                            <button id="btnAdicionar" className="btn" onClick={onAnalistaAdd}><i className="fa-solid fa-user-plus"></i> Analista</button>
-                            <button id="btnGerenciarTurnos" className="btn" onClick={onTurnoManage}><i className="fa-solid fa-clock"></i> Turnos</button>
-                        </>
-                    <button id="btnExportar" className="btn" onClick={() => setIsExportModalOpen(true)}><i className="fa-solid fa-download"></i> Exportar</button>
-                </div>
+                {isUserAdmin && (
+                    <div className="page-actions">
+                        <button id="btnGerenciarAnalistas" className="btn" onClick={onManageAnalysts}><i className="fa-solid fa-users-gear"></i> Gerenciar Analistas</button>
+                        <button id="btnGerenciarTurnos" className="btn" onClick={onTurnoManage}><i className="fa-solid fa-clock"></i> Turnos</button>
+                        <button id="btnExportar" className="btn" onClick={() => setIsExportModalOpen(true)}><i className="fa-solid fa-download"></i> Exportar</button>
+                    </div>
+                )}
             </div>
             {showWelcome && (
                 <div id="welcome-screen" className="welcome-screen">
@@ -259,7 +257,7 @@ const EscalaTable = ({ analistas, turnos, folgasManuais, onAnalistaAdd, onTurnoM
                     </div>
                 </div>
             )}
-            <div id="tabelas" className="tabelas">
+            <div id="tabelas" className="tabelas" ref={tabelasRef}>
                 {tabelas}
             </div>
 

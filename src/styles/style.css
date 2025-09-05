@@ -1596,3 +1596,49 @@ td.trabalho {
     background-color: var(--nav-active-bg);
     color: var(--nav-active-text);
 }
+
+/* Estilos para o modal de Gerenciar Analistas */
+.analysts-list-container {
+    max-height: 400px;
+    overflow-y: auto;
+    margin-top: 20px;
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius);
+}
+
+#analysts-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.9em;
+    min-width: 400px;
+}
+
+#analysts-table thead tr {
+    background-color: var(--header-bg);
+    color: var(--header-text-color);
+    text-align: left;
+    font-weight: bold;
+}
+
+#analysts-table th, #analysts-table td {
+    padding: 12px 15px;
+    border: 1px solid var(--border-color);
+}
+
+#analysts-table tbody tr {
+    border-bottom: 1px solid var(--border-color);
+}
+
+#analysts-table tbody tr:nth-of-type(even) {
+    background-color: var(--table-stripe-bg);
+}
+
+#analysts-table tbody tr:hover {
+    background-color: var(--table-hover-bg);
+}
+
+#analysts-table td .btn {
+    margin-right: 5px;
+    font-size: 0.8em;
+    padding: 5px 10px;
+}
