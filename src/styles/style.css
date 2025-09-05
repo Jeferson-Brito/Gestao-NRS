@@ -1642,3 +1642,101 @@ td.trabalho {
     font-size: 0.8em;
     padding: 5px 10px;
 }
+
+/* Layout Profissional e Minimalista - Modal Gerenciar Analistas */
+
+/* Container da tabela de analistas */
+.analysts-list-container {
+    max-height: 400px;
+    overflow-y: auto;
+    margin-top: 20px;
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    background: var(--card);
+}
+
+/* Tabela limpa e profissional */
+#analysts-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 14px;
+    background: var(--card);
+}
+
+/* Cabeçalho da tabela com destaque */
+#analysts-table thead th {
+    background-color: var(--header-table-bg);
+    color: var(--header-table-text);
+    padding: 16px 12px;
+    font-weight: 700;
+    font-size: 13px;
+    text-align: center;
+    border-bottom: 2px solid var(--btn-primary-bg);
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+}
+
+/* Células da tabela */
+#analysts-table td {
+    padding: 14px 12px;
+    border-bottom: 1px solid var(--border);
+    color: var(--text);
+    vertical-align: middle;
+}
+
+/* Linhas alternadas sutis */
+#analysts-table tbody tr:nth-of-type(even) {
+    background-color: var(--bg);
+}
+
+/* Hover discreto */
+#analysts-table tbody tr:hover {
+    background-color: var(--nav-active-bg);
+}
+
+/* Botões de ação profissionais */
+#analysts-table td .btn {
+    padding: 8px 16px;
+    font-size: 13px;
+    font-weight: 600;
+    border-radius: 6px;
+    border: none;
+    margin-right: 8px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    min-width: 80px;
+    justify-content: center;
+    text-transform: capitalize;
+}
+
+.edit-analyst-btn {
+    background-color: var(--btn-primary-bg);
+    color: white;
+    box-shadow: 0 1px 3px rgba(13, 110, 253, 0.2);
+}
+
+.edit-analyst-btn:hover {
+    background-color: var(--btn-primary-hover);
+    transform: translateY(-1px);
+    box-shadow: 0 2px 6px rgba(13, 110, 253, 0.3);
+}
+
+.delete-analyst-btn {
+    background-color: #6c757d;
+    color: white;
+    box-shadow: 0 1px 3px rgba(108, 117, 125, 0.2);
+}
+
+.delete-analyst-btn:hover {
+    background-color: var(--atestado-bg);
+    transform: translateY(-1px);
+    box-shadow: 0 2px 6px rgba(220, 53, 69, 0.3);
+}
+
+/* Centralização das ações */
+#analysts-table td:last-child {
+    text-align: center;
+}

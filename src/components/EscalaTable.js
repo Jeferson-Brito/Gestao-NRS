@@ -14,7 +14,51 @@ const EscalaTable = ({ analistas, turnos, folgasManuais, onManageAnalysts, onTur
     const [editingCellData, setEditingCellData] = useState(null);
 
     const isUserAdmin = user && user.role === 'admin';
-    const tabelasRef = useRef(null); // Usando useRef para referenciar a div de tabelas
+    const tabelasRef = useRef(null);
+
+    // Função para calcular se é dia de folga considerando a continuidade entre meses
+    const isDiaFolga = (analista, ano, mes, dia) => {
+        // Criar data de referência (primeiro dia que o analista começou a trabalhar)
+        // Assumindo que folgaInicial é relativo ao primeiro mês que o analista foi cadastrado
+        const dataReferencia = new Date(ano, 0, 1); // 1º de janeiro do ano
+        const dataAtual = new Date(ano, mes, dia);
+        
+        // Calcular quantos dias se passaram desde a data de referência
+        const diasDesdeDelta = Math.floor((dataAtual - dataReferencia) / (1000 * 60 * 60 * 24));
+        
+        // Ajustar com base na folga inicial do analista
+        const diasDesdeFolgaInicial = diasDesdeDelta - (analista.folgaInicial - 1);
+        
+        // Calcular o ciclo de 8 dias (6 trabalho + 2 folga)
+        const posicaoNoCiclo = ((diasDesdeFolgaInicial % 8) + 8) % 8;
+        
+        // Posições 0 e 1 no ciclo são dias de folga
+        return posicaoNoCiclo === 0 || posicaoNoCiclo === 1;
+    };
+
+    // Função alternativa mais precisa usando uma data base fixa
+    const isDiaFolgaV2 = (analista, ano, mes, dia) => {
+        const key = `${analista.id}-${ano}-${mes + 1}-${dia}`;
+        const edicaoManual = folgasManuais[key];
+        
+        if (edicaoManual) {
+            return edicaoManual.tipo !== 'trabalho';
+        }
+
+        // Usar uma data base fixa para todos os cálculos
+        // Por exemplo: 1º de janeiro de 2024 como referência
+        const dataBase = new Date(2024, 0, 1);
+        const dataAtual = new Date(ano, mes, dia);
+        
+        // Calcular dias desde a data base
+        const diasDesdeBase = Math.floor((dataAtual - dataBase) / (1000 * 60 * 60 * 24));
+        
+        // Ajustar pela folga inicial do analista
+        // folgaInicial representa o primeiro dia de folga no ciclo
+        const offset = (analista.folgaInicial - 1 + diasDesdeBase) % 8;
+        
+        return offset === 0 || offset === 1;
+    };
 
     const generateTables = () => {
         if (!mes) return;
@@ -93,9 +137,18 @@ const EscalaTable = ({ analistas, turnos, folgasManuais, onManageAnalysts, onTur
                                         default: break;
                                     }
                                 } else {
-                                    const diasDesdeFolgaInicial = dia - analista.folgaInicial;
-                                    const ciclo = (diasDesdeFolgaInicial % 8 + 8) % 8;
-                                    if (ciclo === 0 || ciclo === 1) {
+                                    // Nova lógica de cálculo de folgas
+                                    const dataBase = new Date(2024, 0, 1); // 1º de janeiro de 2024 como referência
+                                    const dataAtual = new Date(ano, mes, dia);
+                                    
+                                    // Calcular dias desde a data base
+                                    const diasDesdeBase = Math.floor((dataAtual - dataBase) / (1000 * 60 * 60 * 24));
+                                    
+                                    // Ajustar pela folga inicial do analista
+                                    const cicloAjustado = (diasDesdeBase - (analista.folgaInicial - 1)) % 8;
+                                    const posicaoNoCiclo = ((cicloAjustado % 8) + 8) % 8;
+                                    
+                                    if (posicaoNoCiclo === 0 || posicaoNoCiclo === 1) {
                                         cellClass = 'folga';
                                         cellText = 'FOLGA';
                                     }
@@ -163,7 +216,7 @@ const EscalaTable = ({ analistas, turnos, folgasManuais, onManageAnalysts, onTur
         }
 
         const nomeArquivo = `escala-${mes || "mes"}.${format}`;
-        const container = tabelasRef.current; // Referência para a div de tabelas
+        const container = tabelasRef.current;
 
         if (format === 'xls') {
             const htmlContent = `
@@ -185,7 +238,7 @@ const EscalaTable = ({ analistas, turnos, folgasManuais, onManageAnalysts, onTur
         } else if (format === 'pdf') {
              const pdf = new jsPDF('l', 'mm', 'a4');
              const pageHeight = pdf.internal.pageSize.getHeight();
-             let y = 10; // Posição inicial no eixo Y
+             let y = 10;
 
              const elements = Array.from(container.children);
 
@@ -204,7 +257,7 @@ const EscalaTable = ({ analistas, turnos, folgasManuais, onManageAnalysts, onTur
                      ignoreElements: (element) => element.getAttribute('data-html2canvas-ignore') === 'true'
                  }).then(canvas => {
                      const imgData = canvas.toDataURL('image/jpeg', 1.0);
-                     const imgHeight = canvas.height * 200 / canvas.width; // Redimensionar para largura de 200mm
+                     const imgHeight = canvas.height * 200 / canvas.width;
 
                      if (y + imgHeight > pageHeight) {
                          pdf.addPage();
@@ -212,7 +265,7 @@ const EscalaTable = ({ analistas, turnos, folgasManuais, onManageAnalysts, onTur
                      }
 
                      pdf.addImage(imgData, 'JPEG', 5, y, 200, imgHeight);
-                     y += imgHeight + 10; // Adiciona um espaçamento de 10mm entre os elementos
+                     y += imgHeight + 10;
 
                      return processElements(index + 1);
                  });
