@@ -1,0 +1,24 @@
+{
+  "name": "gestao-nrs-server",
+  "version": "1.0.0",
+  "description": "Backend for Gestão NRS app",
+  "main": "server.js",
+  "type": "module",
+  "scripts": {
+    "start": "node simple-firebase-server.js",
+    "dev": "node simple-firebase-server.js"
+  },
+  "dependencies": {
+    "cors": "^2.8.5",
+    "express": "^4.21.2",
+    "firebase": "^10.13.2",
+    "firebase-admin": "^12.5.0",
+    "multer": "^2.0.2",
+    "nanoid": "^5.0.7",
+    "puppeteer": "^24.21.0",
+    "sqlite3": "^5.1.7",
+    "xlsx": "^0.18.5"
+  },
+  "author": "Jeferson Brito",
+  "license": "MIT"
+}
