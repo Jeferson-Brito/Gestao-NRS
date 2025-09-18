@@ -315,3 +315,4 @@ const Dashboard = ({ analistas = [], turnos = {}, eventos = [], user }) => {
 };
 
 export default Dashboard;
+

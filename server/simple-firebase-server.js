@@ -215,3 +215,4 @@ app.listen(PORT, async () => {
   console.log(`📱 Frontend: http://localhost:3000`);
   await popularDadosIniciais();
 });
+
