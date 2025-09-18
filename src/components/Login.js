@@ -1,11 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import logo from '../images/image_979eb5.png';
 import PasswordInput from './PasswordInput';
+import axios from 'axios'; // Importe a biblioteca axios para fazer requisições HTTP
 
 const Login = ({ onLogin, onForgotPassword }) => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [errorMessage, setErrorMessage] = useState(''); // Estado para a mensagem de erro
 
   useEffect(() => {
     // Adicionar classe ao body quando o componente montar
@@ -20,8 +22,25 @@ const Login = ({ onLogin, onForgotPassword }) => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setIsLoading(true);
+    setErrorMessage(''); // Limpa a mensagem de erro anterior
     try {
-      await onLogin(email, password);
+      // Fazendo uma requisição POST para a API do seu servidor
+      const response = await axios.post('http://localhost:5000/login', {
+        email,
+        password,
+      });
+
+      // Se a requisição for bem-sucedida, chama a função de login no componente pai
+      if (response.status === 200) {
+        onLogin(response.data.token);
+      }
+    } catch (error) {
+      // Exibe a mensagem de erro da API ou uma mensagem padrão
+      if (error.response && error.response.data && error.response.data.message) {
+        setErrorMessage(error.response.data.message);
+      } else {
+        setErrorMessage('Ocorreu um erro ao tentar fazer login. Tente novamente.');
+      }
     } finally {
       setIsLoading(false);
     }
@@ -84,9 +103,16 @@ const Login = ({ onLogin, onForgotPassword }) => {
             </div>
           </div>
 
+          {/* Exibindo a mensagem de erro */}
+          {errorMessage && (
+            <div className="error-message-container">
+              <span className="error-message">{errorMessage}</span>
+            </div>
+          )}
+
           <div className="form-options">
-            <button 
-              type="button" 
+            <button
+              type="button"
               className="forgot-password-link"
               onClick={onForgotPassword}
             >
@@ -95,8 +121,8 @@ const Login = ({ onLogin, onForgotPassword }) => {
             </button>
           </div>
 
-          <button 
-            type="submit" 
+          <button
+            type="submit"
             className={`modern-submit-btn ${isLoading ? 'loading' : ''}`}
             disabled={isLoading}
           >
