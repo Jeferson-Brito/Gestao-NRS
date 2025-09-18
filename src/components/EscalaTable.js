@@ -1,4 +1,5 @@
 // src/components/EscalaTable.js
+<<<<<<< HEAD
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import Modal from './Modal';
 import EditEscalaModal from './EditEscalaModal';
@@ -35,6 +36,15 @@ const EscalaTable = ({ analistas, turnos, folgasManuais, onManageAnalysts, onTur
     const folgasManuaisAtivas = folgasManuais || dadosTemporarios.folgasManuais;
 
 
+=======
+import React, { useState, useEffect, useRef } from 'react';
+import { jsPDF } from 'jspdf';
+import html2canvas from 'html2canvas';
+import Modal from './Modal';
+import EditEscalaModal from './EditEscalaModal';
+
+const EscalaTable = ({ analistas, turnos, folgasManuais, onManageAnalysts, onTurnoManage, onSaveFolgaManual, user, showToastMessage }) => {
+>>>>>>> 3a7d2720fca6b866ea98c218f4404af359e27906
     const [mes, setMes] = useState('');
     const [tabelas, setTabelas] = useState(null);
     const [showWelcome, setShowWelcome] = useState(true);
@@ -45,7 +55,84 @@ const EscalaTable = ({ analistas, turnos, folgasManuais, onManageAnalysts, onTur
     const isUserAdmin = user && user.role === 'admin';
     const tabelasRef = useRef(null);
 
+<<<<<<< HEAD
     const createTableBlock = useCallback((ano, mes, diaInicio, diasNoBloco, totalDays, semana) => {
+=======
+    // Função para calcular se é dia de folga considerando a continuidade entre meses
+    const isDiaFolga = (analista, ano, mes, dia) => {
+        // Criar data de referência (primeiro dia que o analista começou a trabalhar)
+        // Assumindo que folgaInicial é relativo ao primeiro mês que o analista foi cadastrado
+        const dataReferencia = new Date(ano, 0, 1); // 1º de janeiro do ano
+        const dataAtual = new Date(ano, mes, dia);
+        
+        // Calcular quantos dias se passaram desde a data de referência
+        const diasDesdeDelta = Math.floor((dataAtual - dataReferencia) / (1000 * 60 * 60 * 24));
+        
+        // Ajustar com base na folga inicial do analista
+        const diasDesdeFolgaInicial = diasDesdeDelta - (analista.folgaInicial - 1);
+        
+        // Calcular o ciclo de 8 dias (6 trabalho + 2 folga)
+        const posicaoNoCiclo = ((diasDesdeFolgaInicial % 8) + 8) % 8;
+        
+        // Posições 0 e 1 no ciclo são dias de folga
+        return posicaoNoCiclo === 0 || posicaoNoCiclo === 1;
+    };
+
+    // Função alternativa mais precisa usando uma data base fixa
+    const isDiaFolgaV2 = (analista, ano, mes, dia) => {
+        const key = `${analista.id}-${ano}-${mes + 1}-${dia}`;
+        const edicaoManual = folgasManuais[key];
+        
+        if (edicaoManual) {
+            return edicaoManual.tipo !== 'trabalho';
+        }
+
+        // Usar uma data base fixa para todos os cálculos
+        // Por exemplo: 1º de janeiro de 2024 como referência
+        const dataBase = new Date(2024, 0, 1);
+        const dataAtual = new Date(ano, mes, dia);
+        
+        // Calcular dias desde a data base
+        const diasDesdeBase = Math.floor((dataAtual - dataBase) / (1000 * 60 * 60 * 24));
+        
+        // Ajustar pela folga inicial do analista
+        // folgaInicial representa o primeiro dia de folga no ciclo
+        const offset = (analista.folgaInicial - 1 + diasDesdeBase) % 8;
+        
+        return offset === 0 || offset === 1;
+    };
+
+    const generateTables = () => {
+        if (!mes) return;
+        setShowWelcome(false);
+        const [anoStr, mesStr] = mes.split("-");
+        const ano = parseInt(anoStr, 10);
+        const month = parseInt(mesStr, 10) - 1;
+        const totalDays = new Date(ano, month + 1, 0).getDate();
+
+        const newTables = [];
+        let dayAtual = 1;
+        let semana = 1;
+        while (dayAtual <= totalDays) {
+            const daysInBlock = Math.min(10, totalDays - dayAtual + 1);
+            newTables.push(createTableBlock(ano, month, dayAtual, daysInBlock, totalDays, semana));
+            dayAtual += daysInBlock;
+            semana++;
+        }
+        setTabelas(newTables);
+    };
+
+    useEffect(() => {
+        if (mes) {
+            generateTables();
+        } else {
+            setTabelas(null);
+            setShowWelcome(true);
+        }
+    }, [mes, analistas, turnos, folgasManuais]);
+
+    const createTableBlock = (ano, mes, diaInicio, diasNoBloco, totalDays, semana) => {
+>>>>>>> 3a7d2720fca6b866ea98c218f4404af359e27906
         const headers = ["Turno", "Analista", ...Array.from({ length: 10 }, (_, i) => {
             const dia = diaInicio + i;
             if (dia > totalDays) return "";
@@ -54,11 +141,19 @@ const EscalaTable = ({ analistas, turnos, folgasManuais, onManageAnalysts, onTur
             return `${nomeDia} (${String(dia).padStart(2, "0")})`;
         }), "PAUSA"];
 
+<<<<<<< HEAD
         const turnosOrdenados = Object.keys(turnosAtivos).sort((a, b) => turnosAtivos[a].ordem - turnosAtivos[b].ordem);
 
         const tableRows = [];
         turnosOrdenados.forEach((turnoNome, index) => {
             const analistasDoTurno = analistasAtivos.filter(a => a.turno === turnoNome);
+=======
+        const turnosOrdenados = Object.keys(turnos).sort((a, b) => turnos[a].ordem - turnos[b].ordem);
+
+        const tableRows = [];
+        turnosOrdenados.forEach((turnoNome, index) => {
+            const analistasDoTurno = analistas.filter(a => a.turno === turnoNome);
+>>>>>>> 3a7d2720fca6b866ea98c218f4404af359e27906
             const analistasNoTurno = analistasDoTurno.length;
 
             if (analistasNoTurno > 0) {
@@ -66,6 +161,7 @@ const EscalaTable = ({ analistas, turnos, folgasManuais, onManageAnalysts, onTur
                     const row = (
                         <tr key={analista.id} data-analista-id={analista.id}>
                             {idx === 0 && (
+<<<<<<< HEAD
                                 <td className="turno" rowSpan={analistasNoTurno} style={{ 
                                     backgroundColor: turnosAtivos[turnoNome]?.cor || 'var(--btn-primary-bg)',
                                     color: 'white',
@@ -97,6 +193,13 @@ const EscalaTable = ({ analistas, turnos, folgasManuais, onManageAnalysts, onTur
                                 </td>
                             )}
                             <td className="analista" style={{ backgroundColor: turnosAtivos[turnoNome]?.cor || 'var(--btn-primary-bg)' }}>
+=======
+                                <td className="turno" rowSpan={analistasNoTurno} style={{ backgroundColor: turnos[turnoNome]?.cor || 'var(--btn-primary-bg)' }}>
+                                    {turnoNome}
+                                </td>
+                            )}
+                            <td className="analista" style={{ backgroundColor: turnos[turnoNome]?.cor || 'var(--btn-primary-bg)' }}>
+>>>>>>> 3a7d2720fca6b866ea98c218f4404af359e27906
                                 {analista.nome}
                             </td>
                             {Array.from({ length: 10 }, (_, i) => {
@@ -108,7 +211,11 @@ const EscalaTable = ({ analistas, turnos, folgasManuais, onManageAnalysts, onTur
                                 const key = `${analista.id}-${ano}-${mes + 1}-${dia}`;
                                 const edicaoManual = folgasManuais[key];
                                 let cellClass = 'trabalho';
+<<<<<<< HEAD
                                 let cellText = turnosAtivos[turnoNome]?.horario || "";
+=======
+                                let cellText = turnos[analista.turno]?.horario || "";
+>>>>>>> 3a7d2720fca6b866ea98c218f4404af359e27906
 
                                 if (edicaoManual) {
                                     cellClass = edicaoManual.tipo;
@@ -189,6 +296,7 @@ const EscalaTable = ({ analistas, turnos, folgasManuais, onManageAnalysts, onTur
                 </table>
             </div>
         );
+<<<<<<< HEAD
     }, [analistasAtivos, turnosAtivos, isUserAdmin]);
 
     const generateTables = useCallback(() => {
@@ -221,6 +329,10 @@ const EscalaTable = ({ analistas, turnos, folgasManuais, onManageAnalysts, onTur
     }, [mes, generateTables]);
 
     // Função handleExport corrigida para usar o servidor para PDFs
+=======
+    };
+
+>>>>>>> 3a7d2720fca6b866ea98c218f4404af359e27906
     const handleExport = (format) => {
         if (!tabelas) {
             alert("Gere a escala antes de exportar.");
@@ -248,6 +360,7 @@ const EscalaTable = ({ analistas, turnos, folgasManuais, onManageAnalysts, onTur
             URL.revokeObjectURL(url);
             showToastMessage('Escala exportada para Excel!', 'fa-file-excel');
         } else if (format === 'pdf') {
+<<<<<<< HEAD
             // Limpar o conteúdo HTML removendo elementos desnecessários para o PDF
             const cleanContainer = container.cloneNode(true);
             
@@ -415,6 +528,48 @@ const EscalaTable = ({ analistas, turnos, folgasManuais, onManageAnalysts, onTur
                 
                 showToastMessage(`Falha ao carregar documento PDF: ${errorMessage}`, 'fa-exclamation-circle', true);
             });
+=======
+             const pdf = new jsPDF('l', 'mm', 'a4');
+             const pageHeight = pdf.internal.pageSize.getHeight();
+             let y = 10;
+
+             const elements = Array.from(container.children);
+
+             const processElements = (index) => {
+                 if (index >= elements.length) {
+                     pdf.save(nomeArquivo);
+                     showToastMessage('Escala exportada para PDF!', 'fa-file-pdf');
+                     setIsExportModalOpen(false);
+                     return Promise.resolve();
+                 }
+                 const el = elements[index];
+                 return html2canvas(el, {
+                     scale: 1.5,
+                     useCORS: true,
+                     logging: false,
+                     ignoreElements: (element) => element.getAttribute('data-html2canvas-ignore') === 'true'
+                 }).then(canvas => {
+                     const imgData = canvas.toDataURL('image/jpeg', 1.0);
+                     const imgHeight = canvas.height * 200 / canvas.width;
+
+                     if (y + imgHeight > pageHeight) {
+                         pdf.addPage();
+                         y = 10;
+                     }
+
+                     pdf.addImage(imgData, 'JPEG', 5, y, 200, imgHeight);
+                     y += imgHeight + 10;
+
+                     return processElements(index + 1);
+                 });
+             };
+
+             processElements(0).catch(err => {
+                 console.error("Erro ao renderizar para PDF:", err);
+                 showToastMessage('Erro ao exportar PDF. Tente novamente.', 'fa-exclamation-circle', true);
+                 setIsExportModalOpen(false);
+             });
+>>>>>>> 3a7d2720fca6b866ea98c218f4404af359e27906
         }
         setIsExportModalOpen(false);
     };

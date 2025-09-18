@@ -1,7 +1,10 @@
 import React, { useState } from 'react';
 import Modal from './Modal';
 import axios from 'axios';
+<<<<<<< HEAD
 import PasswordInput from './PasswordInput';
+=======
+>>>>>>> 3a7d2720fca6b866ea98c218f4404af359e27906
 
 const ResetPasswordModal = ({ show, onClose, token }) => {
     const [password, setPassword] = useState('');
@@ -37,22 +40,40 @@ const ResetPasswordModal = ({ show, onClose, token }) => {
                 <h2>Redefinir Senha</h2>
                 <div className="form-group">
                     <label htmlFor="new-password">Nova Senha:</label>
+<<<<<<< HEAD
                     <PasswordInput
                         id="new-password"
                         value={password}
                         onChange={(e) => setPassword(e.target.value)}
                         placeholder="Digite a nova senha"
                         required
+=======
+                    <input
+                        type="password"
+                        id="new-password"
+                        required
+                        value={password}
+                        onChange={(e) => setPassword(e.target.value)}
+>>>>>>> 3a7d2720fca6b866ea98c218f4404af359e27906
                     />
                 </div>
                 <div className="form-group">
                     <label htmlFor="confirm-password">Confirme a Nova Senha:</label>
+<<<<<<< HEAD
                     <PasswordInput
                         id="confirm-password"
                         value={confirmPassword}
                         onChange={(e) => setConfirmPassword(e.target.value)}
                         placeholder="Confirme a nova senha"
                         required
+=======
+                    <input
+                        type="password"
+                        id="confirm-password"
+                        required
+                        value={confirmPassword}
+                        onChange={(e) => setConfirmPassword(e.target.value)}
+>>>>>>> 3a7d2720fca6b866ea98c218f4404af359e27906
                     />
                 </div>
                 {message && (

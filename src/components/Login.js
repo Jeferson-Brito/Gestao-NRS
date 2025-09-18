@@ -1,11 +1,17 @@
+<<<<<<< HEAD
 import React, { useState, useEffect } from 'react';
 import logo from '../images/image_979eb5.png';
 import PasswordInput from './PasswordInput';
 import axios from 'axios'; // Importe a biblioteca axios para fazer requisições HTTP
+=======
+import React, { useState } from 'react';
+import logo from '../images/image_979eb5.png'; // Importa o logo
+>>>>>>> 3a7d2720fca6b866ea98c218f4404af359e27906
 
 const Login = ({ onLogin, onForgotPassword }) => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+<<<<<<< HEAD
   const [isLoading, setIsLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState(''); // Estado para a mensagem de erro
 
@@ -154,6 +160,45 @@ const Login = ({ onLogin, onForgotPassword }) => {
         <div className="decoration-circle circle-1"></div>
         <div className="decoration-circle circle-2"></div>
         <div className="decoration-circle circle-3"></div>
+=======
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    onLogin(email, password);
+  };
+
+  return (
+    <div className="login-container">
+      <div className="login-card">
+        <img src={logo} alt="Logo Equipe NRS" className="login-logo" />
+        <h2 className="login-title">Acesse sua conta</h2>
+        <form onSubmit={handleSubmit}>
+          <div className="form-group">
+            <label htmlFor="email">Email:</label>
+            <input
+              type="email"
+              id="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              required
+            />
+          </div>
+          <div className="form-group">
+            <label htmlFor="password">Senha:</label>
+            <input
+              type="password"
+              id="password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              required
+            />
+          </div>
+          <div className="forgot-password">
+            <a href="#" onClick={onForgotPassword}>Esqueci minha senha</a>
+          </div>
+          <button type="submit" className="btn primary full-width">Entrar</button>
+        </form>
+>>>>>>> 3a7d2720fca6b866ea98c218f4404af359e27906
       </div>
     </div>
   );

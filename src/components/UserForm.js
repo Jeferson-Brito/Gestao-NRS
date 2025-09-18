@@ -1,5 +1,8 @@
 import React, { useState, useEffect } from 'react';
+<<<<<<< HEAD
 import PasswordInput from './PasswordInput';
+=======
+>>>>>>> 3a7d2720fca6b866ea98c218f4404af359e27906
 
 const UserForm = ({ user, onSave, onCancel }) => {
     const [username, setUsername] = useState('');
@@ -23,6 +26,7 @@ const UserForm = ({ user, onSave, onCancel }) => {
 
     const handleSubmit = (e) => {
         e.preventDefault();
+<<<<<<< HEAD
         
         // Preparar dados do usuário
         const userData = {
@@ -38,6 +42,15 @@ const UserForm = ({ user, onSave, onCancel }) => {
         }
         
         onSave(userData);
+=======
+        onSave({
+            id: user?.id,
+            username,
+            email,
+            password,
+            role
+        });
+>>>>>>> 3a7d2720fca6b866ea98c218f4404af359e27906
         onCancel();
     };
 
@@ -54,6 +67,7 @@ const UserForm = ({ user, onSave, onCancel }) => {
             </div>
             <div className="form-group">
                 <label htmlFor="password">Senha:</label>
+<<<<<<< HEAD
                 <PasswordInput
                     id="password"
                     value={password}
@@ -61,6 +75,9 @@ const UserForm = ({ user, onSave, onCancel }) => {
                     placeholder={user ? "Deixe em branco para manter a senha atual" : "Digite a senha"}
                     required={!user}
                 />
+=======
+                <input type="password" id="password" required={!user} value={password} onChange={e => setPassword(e.target.value)} />
+>>>>>>> 3a7d2720fca6b866ea98c218f4404af359e27906
             </div>
             <div className="form-group">
                 <label htmlFor="role">Permissão:</label>

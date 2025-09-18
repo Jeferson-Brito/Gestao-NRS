@@ -1739,6 +1739,7 @@ td.trabalho {
 /* Centralização das ações */
 #analysts-table td:last-child {
     text-align: center;
+<<<<<<< HEAD
 }
 
 /* Password Input Component Styles */
@@ -2812,4 +2813,6 @@ body.login-active {
 
 [data-theme="dark"] .shift-bar {
     background: #4b5563;
+=======
+>>>>>>> 3a7d2720fca6b866ea98c218f4404af359e27906
 }

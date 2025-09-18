@@ -8,11 +8,16 @@
     "@testing-library/react": "^16.3.0",
     "@testing-library/user-event": "^13.5.0",
     "axios": "^1.11.0",
+<<<<<<< HEAD
     "bcrypt": "^6.0.0",
     "firebase": "^12.2.1",
     "html2canvas": "^1.4.1",
     "jspdf": "^3.0.2",
     "puppeteer": "^24.21.0",
+=======
+    "html2canvas": "^1.4.1",
+    "jspdf": "^3.0.2",
+>>>>>>> 3a7d2720fca6b866ea98c218f4404af359e27906
     "react": "^19.1.1",
     "react-dom": "^19.1.1",
     "react-scripts": "5.0.1",

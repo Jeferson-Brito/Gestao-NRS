@@ -1,11 +1,17 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import axios from 'axios';
+<<<<<<< HEAD
 import config from './config';
+=======
+>>>>>>> 3a7d2720fca6b866ea98c218f4404af359e27906
 import Navbar from './components/Navbar';
 import EscalaTable from './components/EscalaTable';
 import CalendarComponent from './components/Calendar';
 import KnowledgeBase from './components/KnowledgeBase';
+<<<<<<< HEAD
 import Dashboard from './components/Dashboard';
+=======
+>>>>>>> 3a7d2720fca6b866ea98c218f4404af359e27906
 import Modal from './components/Modal';
 import AnalystManagementModal from './components/AnalystManagementModal';
 import AnalistaForm from './components/AnalistaForm';
@@ -50,9 +56,15 @@ const App = () => {
     const [user, setUser] = useState(getInitialUser());
     const [isAnalystManagementModalOpen, setIsAnalystManagementModalOpen] = useState(false);
     const [isAnalistaModalOpen, setIsAnalistaModalOpen] = useState(false);
+<<<<<<< HEAD
     const [editingAnalista] = useState(null);
     
     const API_URL = config.API_URL;
+=======
+    const [editingAnalista, setEditingAnalista] = useState(null);
+    
+    const API_URL = 'http://localhost:3001/api';
+>>>>>>> 3a7d2720fca6b866ea98c218f4404af359e27906
 
     // Configura um cliente Axios com cabeçalhos padrão
     const api = axios.create({
@@ -69,7 +81,11 @@ const App = () => {
         return Promise.reject(error);
     });
     
+<<<<<<< HEAD
     const fetchData = useCallback(async () => {
+=======
+    const fetchData = async () => {
+>>>>>>> 3a7d2720fca6b866ea98c218f4404af359e27906
         try {
             const [analistasRes, turnosRes, eventosRes, folgasManuaisRes, usersRes] = await Promise.all([
                 api.get('/analistas'),
@@ -80,9 +96,13 @@ const App = () => {
             ]);
 
             const turnosData = turnosRes.data.reduce((acc, curr) => {
+<<<<<<< HEAD
                 // Usar 'nome' se existir, senão usar 'name' para compatibilidade
                 const nomeTurno = curr.nome || curr.name;
                 acc[nomeTurno] = curr;
+=======
+                acc[curr.name] = curr;
+>>>>>>> 3a7d2720fca6b866ea98c218f4404af359e27906
                 return acc;
             }, {});
 
@@ -96,12 +116,20 @@ const App = () => {
         } catch (error) {
             console.error("Failed to fetch data from API", error);
         }
+<<<<<<< HEAD
     }, []);
     
     useEffect(() => {
         // Carregar dados apenas uma vez na inicialização
         fetchData();
     }, [fetchData]);
+=======
+    };
+    
+    useEffect(() => {
+        fetchData();
+    }, [user]);
+>>>>>>> 3a7d2720fca6b866ea98c218f4404af359e27906
 
     const [isTurnoModalOpen, setIsTurnoModalOpen] = useState(false);
     const [isEventoModalOpen, setIsEventoModalOpen] = useState(false);
@@ -124,10 +152,17 @@ const App = () => {
     
     const handleLogin = async (email, password) => {
         try {
+<<<<<<< HEAD
             const response = await api.post('/login', { email, password });
             setUser(response.data.user);
             localStorage.setItem('currentUser', JSON.stringify(response.data.user));
             showToastMessage(`Olá, ${response.data.user.username}! Login realizado com sucesso.`, 'fa-check');
+=======
+            const response = await axios.post(`${API_URL}/login`, { email, password });
+            setUser(response.data);
+            localStorage.setItem('currentUser', JSON.stringify(response.data));
+            showToastMessage(`Olá, ${response.data.username}! Login realizado com sucesso.`, 'fa-check');
+>>>>>>> 3a7d2720fca6b866ea98c218f4404af359e27906
             setCurrentPage('dashboard');
         } catch (error) {
             showToastMessage('Dados de login incorretos. Por favor, tente novamente.', 'fa-exclamation-circle', true);
@@ -349,12 +384,16 @@ const App = () => {
     }
 
     const pages = {
+<<<<<<< HEAD
         'dashboard': <Dashboard 
                         analistas={data.analistas}
                         turnos={data.turnos}
                         eventos={data.eventos}
                         user={user}
                     />,
+=======
+        'dashboard': <div className="content-placeholder"><p>Página em desenvolvimento. Em breve, adicionaremos aqui as informações e ferramentas mais importantes para a sua gestão diária!</p></div>,
+>>>>>>> 3a7d2720fca6b866ea98c218f4404af359e27906
         'escala': <EscalaTable
                     analistas={data.analistas}
                     turnos={data.turnos}
