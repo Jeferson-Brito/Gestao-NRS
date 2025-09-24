@@ -16,6 +16,7 @@ const UserManagement = ({ users, onSaveUser, onDeleteUser }) => {
     setIsUserModalOpen(true);
   };
 
+
   return (
     <>
       <div className="page-header">
@@ -41,7 +42,9 @@ const UserManagement = ({ users, onSaveUser, onDeleteUser }) => {
                 <td>{user.id}</td>
                 <td>{user.username}</td>
                 <td>{user.email}</td>
-                <td>{user.role}</td>
+                <td>
+                  {user.role === 'admin' ? 'Administrador' : 'Analista'}
+                </td>
                 <td>
                   <button className="edit-user-btn" onClick={() => handleEditUser(user)}>Editar</button>
                   <button className="delete-user-btn" onClick={() => onDeleteUser(user.id)}>Excluir</button>

@@ -1,8 +1,11 @@
 // src/components/EscalaTable.js
-<<<<<<< HEAD
 import React, { useState, useEffect, useRef, useCallback } from 'react';
+import { jsPDF } from 'jspdf';
+import html2canvas from 'html2canvas';
 import Modal from './Modal';
 import EditEscalaModal from './EditEscalaModal';
+import AnalystManagementModal from './AnalystManagementModal';
+import ShiftManagementModal from './ShiftManagementModal';
 
 const API_URL = 'http://localhost:3001/api';
 
@@ -35,104 +38,168 @@ const EscalaTable = ({ analistas, turnos, folgasManuais, onManageAnalysts, onTur
     const turnosAtivos = (turnos && Object.keys(turnos).length > 0) ? turnos : dadosTemporarios.turnos;
     const folgasManuaisAtivas = folgasManuais || dadosTemporarios.folgasManuais;
 
-
-=======
-import React, { useState, useEffect, useRef } from 'react';
-import { jsPDF } from 'jspdf';
-import html2canvas from 'html2canvas';
-import Modal from './Modal';
-import EditEscalaModal from './EditEscalaModal';
-
-const EscalaTable = ({ analistas, turnos, folgasManuais, onManageAnalysts, onTurnoManage, onSaveFolgaManual, user, showToastMessage }) => {
->>>>>>> 3a7d2720fca6b866ea98c218f4404af359e27906
     const [mes, setMes] = useState('');
     const [tabelas, setTabelas] = useState(null);
     const [showWelcome, setShowWelcome] = useState(true);
     const [isExportModalOpen, setIsExportModalOpen] = useState(false);
     const [isEditEscalaModalOpen, setIsEditEscalaModalOpen] = useState(false);
     const [editingCellData, setEditingCellData] = useState(null);
+    const [isAnalystModalOpen, setIsAnalystModalOpen] = useState(false);
+    const [isShiftModalOpen, setIsShiftModalOpen] = useState(false);
+    
+    console.log('Estado dos modais:', { isAnalystModalOpen, isShiftModalOpen });
+    const [analysts, setAnalysts] = useState([]);
+    const [shifts, setShifts] = useState([]);
+    const [isLoading, setIsLoading] = useState(true);
+
+    // Carregar dados do Firebase ou localStorage na inicialização
+    useEffect(() => {
+        const loadData = async () => {
+            try {
+                // Tentar carregar do Firebase primeiro
+                const API_URL = 'https://gestao-nrs-backend.vercel.app/api';
+                const response = await fetch(`${API_URL}/sync`);
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    
+                    // Atualizar analistas do Firebase
+                    if (data.analysts && data.analysts.length > 0) {
+                        setAnalysts(data.analysts);
+                        localStorage.setItem('nexus_analysts', JSON.stringify(data.analysts));
+                    }
+
+                    // Atualizar turnos do Firebase
+                    if (data.shifts && data.shifts.length > 0) {
+                        setShifts(data.shifts);
+                        localStorage.setItem('nexus_shifts', JSON.stringify(data.shifts));
+                    }
+                    
+                    console.log('✅ Dados carregados do Firebase:', { 
+                        analysts: data.analysts?.length || 0, 
+                        shifts: data.shifts?.length || 0 
+                    });
+                } else {
+                    throw new Error('Firebase indisponível');
+                }
+            } catch (error) {
+                // Firebase falhou, usar localStorage
+                console.warn('⚠️ Firebase indisponível, carregando do localStorage:', error.message);
+                
+                // Carregar analistas do localStorage
+                const localAnalysts = JSON.parse(localStorage.getItem('nexus_analysts') || '[]');
+                if (localAnalysts.length > 0) {
+                    setAnalysts(localAnalysts);
+                } else if (analistasAtivos && analistasAtivos.length > 0) {
+                    // Fallback para dados iniciais
+                    const initialAnalysts = analistasAtivos.map(analyst => ({
+                        id: analyst.id?.toString() || Date.now().toString(),
+                        name: analyst.nome || analyst.name,
+                        shift: analyst.turno || analyst.shift || 'Madrugada',
+                        breakTime: analyst.pausa || analyst.breakTime || '01:00 - 02:00',
+                        startDay: analyst.folgaInicial || analyst.startDay || 1
+                    }));
+                    setAnalysts(initialAnalysts);
+                    localStorage.setItem('nexus_analysts', JSON.stringify(initialAnalysts));
+                }
+
+                // Carregar turnos do localStorage
+                const localShifts = JSON.parse(localStorage.getItem('nexus_shifts') || '[]');
+                if (localShifts.length > 0) {
+                    setShifts(localShifts);
+                } else {
+                    // Turnos padrão
+                    const defaultShifts = [
+                        { id: '1', name: 'Madrugada', time: '22:00 - 06:00', color: '#6a1b4d', order: 1 },
+                        { id: '2', name: 'Matinal', time: '05:40 - 14:00', color: '#8b4513', order: 2 },
+                        { id: '3', name: 'Manhã', time: '07:00 - 15:20', color: '#c49a30', order: 3 },
+                        { id: '4', name: 'Tarde', time: '13:40 - 22:00', color: '#1f4e79', order: 4 }
+                    ];
+                    setShifts(defaultShifts);
+                    localStorage.setItem('nexus_shifts', JSON.stringify(defaultShifts));
+                }
+                
+                console.log('📱 Dados carregados do localStorage');
+            } finally {
+                setIsLoading(false);
+            }
+        };
+
+        loadData();
+    }, [analistasAtivos]);
 
     const isUserAdmin = user && user.role === 'admin';
     const tabelasRef = useRef(null);
 
-<<<<<<< HEAD
-    const createTableBlock = useCallback((ano, mes, diaInicio, diasNoBloco, totalDays, semana) => {
-=======
-    // Função para calcular se é dia de folga considerando a continuidade entre meses
-    const isDiaFolga = (analista, ano, mes, dia) => {
-        // Criar data de referência (primeiro dia que o analista começou a trabalhar)
-        // Assumindo que folgaInicial é relativo ao primeiro mês que o analista foi cadastrado
-        const dataReferencia = new Date(ano, 0, 1); // 1º de janeiro do ano
-        const dataAtual = new Date(ano, mes, dia);
-        
-        // Calcular quantos dias se passaram desde a data de referência
-        const diasDesdeDelta = Math.floor((dataAtual - dataReferencia) / (1000 * 60 * 60 * 24));
-        
-        // Ajustar com base na folga inicial do analista
-        const diasDesdeFolgaInicial = diasDesdeDelta - (analista.folgaInicial - 1);
-        
-        // Calcular o ciclo de 8 dias (6 trabalho + 2 folga)
-        const posicaoNoCiclo = ((diasDesdeFolgaInicial % 8) + 8) % 8;
-        
-        // Posições 0 e 1 no ciclo são dias de folga
-        return posicaoNoCiclo === 0 || posicaoNoCiclo === 1;
-    };
-
-    // Função alternativa mais precisa usando uma data base fixa
-    const isDiaFolgaV2 = (analista, ano, mes, dia) => {
-        const key = `${analista.id}-${ano}-${mes + 1}-${dia}`;
-        const edicaoManual = folgasManuais[key];
-        
-        if (edicaoManual) {
-            return edicaoManual.tipo !== 'trabalho';
-        }
-
-        // Usar uma data base fixa para todos os cálculos
-        // Por exemplo: 1º de janeiro de 2024 como referência
-        const dataBase = new Date(2024, 0, 1);
-        const dataAtual = new Date(ano, mes, dia);
-        
-        // Calcular dias desde a data base
-        const diasDesdeBase = Math.floor((dataAtual - dataBase) / (1000 * 60 * 60 * 24));
-        
-        // Ajustar pela folga inicial do analista
-        // folgaInicial representa o primeiro dia de folga no ciclo
-        const offset = (analista.folgaInicial - 1 + diasDesdeBase) % 8;
-        
-        return offset === 0 || offset === 1;
-    };
-
-    const generateTables = () => {
-        if (!mes) return;
-        setShowWelcome(false);
-        const [anoStr, mesStr] = mes.split("-");
-        const ano = parseInt(anoStr, 10);
-        const month = parseInt(mesStr, 10) - 1;
-        const totalDays = new Date(ano, month + 1, 0).getDate();
-
-        const newTables = [];
-        let dayAtual = 1;
-        let semana = 1;
-        while (dayAtual <= totalDays) {
-            const daysInBlock = Math.min(10, totalDays - dayAtual + 1);
-            newTables.push(createTableBlock(ano, month, dayAtual, daysInBlock, totalDays, semana));
-            dayAtual += daysInBlock;
-            semana++;
-        }
-        setTabelas(newTables);
-    };
-
-    useEffect(() => {
-        if (mes) {
-            generateTables();
+    // Funções de gerenciamento de analistas
+    const handleSaveAnalyst = (analystData) => {
+        // Atualizar estado local
+        if (analystData.id && analysts.find(a => a.id === analystData.id)) {
+            setAnalysts(prev => prev.map(a => a.id === analystData.id ? analystData : a));
         } else {
-            setTabelas(null);
-            setShowWelcome(true);
+            setAnalysts(prev => [...prev, analystData]);
         }
-    }, [mes, analistas, turnos, folgasManuais]);
+        
+        // Salvar no localStorage para persistência
+        const updatedAnalysts = analystData.id && analysts.find(a => a.id === analystData.id)
+            ? analysts.map(a => a.id === analystData.id ? analystData : a)
+            : [...analysts, analystData];
+        localStorage.setItem('nexus_analysts', JSON.stringify(updatedAnalysts));
+        
+        console.log('💾 Analista salvo localmente:', analystData);
+    };
 
-    const createTableBlock = (ano, mes, diaInicio, diasNoBloco, totalDays, semana) => {
->>>>>>> 3a7d2720fca6b866ea98c218f4404af359e27906
+    const handleDeleteAnalyst = (analystId) => {
+        // Atualizar estado local
+        const updatedAnalysts = analysts.filter(a => a.id !== analystId);
+        setAnalysts(updatedAnalysts);
+        
+        // Salvar no localStorage para persistência
+        localStorage.setItem('nexus_analysts', JSON.stringify(updatedAnalysts));
+        
+        console.log('🗑️ Analista removido localmente:', analystId);
+    };
+
+    const handleReorderAnalysts = (fromIndex, toIndex) => {
+        setAnalysts(prev => {
+            const newAnalysts = [...prev];
+            const [movedAnalyst] = newAnalysts.splice(fromIndex, 1);
+            newAnalysts.splice(toIndex, 0, movedAnalyst);
+            return newAnalysts;
+        });
+    };
+
+    // Funções de gerenciamento de turnos
+    const handleSaveShift = async (shiftData) => {
+        // Atualizar localmente primeiro para feedback imediato
+        if (shiftData.id && shifts.find(s => s.id === shiftData.id)) {
+            setShifts(prev => prev.map(s => s.id === shiftData.id ? shiftData : s));
+        } else {
+            setShifts(prev => [...prev, shiftData]);
+        }
+        
+        // Recarregar dados do Firebase para sincronizar
+        setTimeout(reloadFirebaseData, 1000);
+    };
+
+    const handleDeleteShift = async (shiftId) => {
+        // Atualizar localmente primeiro para feedback imediato
+        setShifts(prev => prev.filter(s => s.id !== shiftId));
+        
+        // Recarregar dados do Firebase para sincronizar
+        setTimeout(reloadFirebaseData, 1000);
+    };
+
+    const handleReorderShifts = (fromIndex, toIndex) => {
+        setShifts(prev => {
+            const newShifts = [...prev];
+            const [movedShift] = newShifts.splice(fromIndex, 1);
+            newShifts.splice(toIndex, 0, movedShift);
+            return newShifts;
+        });
+    };
+
+    const createTableBlock = useCallback((ano, mes, diaInicio, diasNoBloco, totalDays, semana) => {
         const headers = ["Turno", "Analista", ...Array.from({ length: 10 }, (_, i) => {
             const dia = diaInicio + i;
             if (dia > totalDays) return "";
@@ -141,19 +208,11 @@ const EscalaTable = ({ analistas, turnos, folgasManuais, onManageAnalysts, onTur
             return `${nomeDia} (${String(dia).padStart(2, "0")})`;
         }), "PAUSA"];
 
-<<<<<<< HEAD
-        const turnosOrdenados = Object.keys(turnosAtivos).sort((a, b) => turnosAtivos[a].ordem - turnosAtivos[b].ordem);
+        const turnosOrdenados = shifts.sort((a, b) => a.name.localeCompare(b.name));
 
         const tableRows = [];
-        turnosOrdenados.forEach((turnoNome, index) => {
-            const analistasDoTurno = analistasAtivos.filter(a => a.turno === turnoNome);
-=======
-        const turnosOrdenados = Object.keys(turnos).sort((a, b) => turnos[a].ordem - turnos[b].ordem);
-
-        const tableRows = [];
-        turnosOrdenados.forEach((turnoNome, index) => {
-            const analistasDoTurno = analistas.filter(a => a.turno === turnoNome);
->>>>>>> 3a7d2720fca6b866ea98c218f4404af359e27906
+        turnosOrdenados.forEach((turno, index) => {
+            const analistasDoTurno = analysts.filter(a => a.shift === turno.name);
             const analistasNoTurno = analistasDoTurno.length;
 
             if (analistasNoTurno > 0) {
@@ -161,9 +220,8 @@ const EscalaTable = ({ analistas, turnos, folgasManuais, onManageAnalysts, onTur
                     const row = (
                         <tr key={analista.id} data-analista-id={analista.id}>
                             {idx === 0 && (
-<<<<<<< HEAD
                                 <td className="turno" rowSpan={analistasNoTurno} style={{ 
-                                    backgroundColor: turnosAtivos[turnoNome]?.cor || 'var(--btn-primary-bg)',
+                                    backgroundColor: turno.color || 'var(--btn-primary-bg)',
                                     color: 'white',
                                     textAlign: 'center',
                                     verticalAlign: 'middle',
@@ -175,7 +233,7 @@ const EscalaTable = ({ analistas, turnos, folgasManuais, onManageAnalysts, onTur
                                         fontSize: '12px',
                                         lineHeight: '1.2'
                                     }}>
-                                        {turnoNome}
+                                        {turno.name}
                                     </div>
                                     <div style={{ 
                                         fontSize: '10px', 
@@ -188,19 +246,12 @@ const EscalaTable = ({ analistas, turnos, folgasManuais, onManageAnalysts, onTur
                                         borderRadius: '3px',
                                         marginTop: '2px'
                                     }}>
-                                        {turnosAtivos[turnoNome]?.horario || ''}
+                                        {turno.time || ''}
                                     </div>
                                 </td>
                             )}
-                            <td className="analista" style={{ backgroundColor: turnosAtivos[turnoNome]?.cor || 'var(--btn-primary-bg)' }}>
-=======
-                                <td className="turno" rowSpan={analistasNoTurno} style={{ backgroundColor: turnos[turnoNome]?.cor || 'var(--btn-primary-bg)' }}>
-                                    {turnoNome}
-                                </td>
-                            )}
-                            <td className="analista" style={{ backgroundColor: turnos[turnoNome]?.cor || 'var(--btn-primary-bg)' }}>
->>>>>>> 3a7d2720fca6b866ea98c218f4404af359e27906
-                                {analista.nome}
+                            <td className="analista" style={{ backgroundColor: turno.color || 'var(--btn-primary-bg)' }}>
+                                {analista.name}
                             </td>
                             {Array.from({ length: 10 }, (_, i) => {
                                 const dia = diaInicio + i;
@@ -209,13 +260,10 @@ const EscalaTable = ({ analistas, turnos, folgasManuais, onManageAnalysts, onTur
                                 }
 
                                 const key = `${analista.id}-${ano}-${mes + 1}-${dia}`;
-                                const edicaoManual = folgasManuais[key];
+                                const edicaoManual = folgasManuaisAtivas[key];
                                 let cellClass = 'trabalho';
-<<<<<<< HEAD
-                                let cellText = turnosAtivos[turnoNome]?.horario || "";
-=======
-                                let cellText = turnos[analista.turno]?.horario || "";
->>>>>>> 3a7d2720fca6b866ea98c218f4404af359e27906
+                                let cellText = turno.time || "";
+                                let cellStyle = {};
 
                                 if (edicaoManual) {
                                     cellClass = edicaoManual.tipo;
@@ -226,27 +274,29 @@ const EscalaTable = ({ analistas, turnos, folgasManuais, onManageAnalysts, onTur
                                         default: break;
                                     }
                                 } else {
-                                    // Nova lógica de cálculo de folgas
-                                    const dataBase = new Date(2024, 0, 1); // 1º de janeiro de 2024 como referência
-                                    const dataAtual = new Date(ano, mes, dia);
+                                    // Sistema 6x2: 6 dias trabalhando, 2 de folga
+                                    // Se a folga inicial é no dia 1, as folgas serão nos dias 1,2,8,9,16,17,24,25...
+                                    const diaSemana = new Date(ano, mes, dia).getDay();
                                     
-                                    // Calcular dias desde a data base
-                                    const diasDesdeBase = Math.floor((dataAtual - dataBase) / (1000 * 60 * 60 * 24));
+                                    // Calcular a posição no ciclo de 8 dias (6 trabalho + 2 folga)
+                                    const diasDesdeInicio = (dia - analista.startDay + 7) % 7;
+                                    const cicloCompleto = Math.floor((dia - analista.startDay) / 7);
+                                    const posicaoNoCiclo = (dia - analista.startDay) % 8;
                                     
-                                    // Ajustar pela folga inicial do analista
-                                    const cicloAjustado = (diasDesdeBase - (analista.folgaInicial - 1)) % 8;
-                                    const posicaoNoCiclo = ((cicloAjustado % 8) + 8) % 8;
-                                    
+                                    // Se a posição no ciclo é 0 ou 1 (primeiros 2 dias do ciclo de 8), é folga
                                     if (posicaoNoCiclo === 0 || posicaoNoCiclo === 1) {
                                         cellClass = 'folga';
                                         cellText = 'FOLGA';
+                                    } else {
+                                        cellText = turno.time || '';
                                     }
                                 }
 
                                 return (
                                     <td
                                         key={i}
-                                        className={isUserAdmin ? cellClass : ''}
+                                        className={cellClass}
+                                        style={cellStyle}
                                         onClick={() => {
                                             if (isUserAdmin) {
                                                 setEditingCellData({ analistaId: analista.id, dia, mes: mes + 1, ano });
@@ -258,25 +308,25 @@ const EscalaTable = ({ analistas, turnos, folgasManuais, onManageAnalysts, onTur
                                     </td>
                                 );
                             })}
-                            <td className="pausa">{analista.pausa}</td>
+                            <td className="pausa">{analista.breakTime}</td>
                         </tr>
                     );
                     tableRows.push(row);
                 });
                 if (index < turnosOrdenados.length - 1) {
-                    tableRows.push(<tr key={`separator-${turnoNome}`} className="separator-row"><td colSpan={headers.length}></td></tr>);
+                    tableRows.push(<tr key={`separator-${turno.name}`} className="separator-row"><td colSpan={headers.length}></td></tr>);
                 }
             } else {
                  tableRows.push(
-                    <tr key={turnoNome}>
-                        <td className="turno" style={{ backgroundColor: turnos[turnoNome]?.cor || 'var(--btn-primary-bg)' }}>{turnoNome}</td>
-                        <td className="analista" style={{ backgroundColor: turnos[turnoNome]?.cor || 'var(--btn-primary-bg)' }}>(Nenhum analista)</td>
+                    <tr key={turno.name}>
+                        <td className="turno" style={{ backgroundColor: turno.color || 'var(--btn-primary-bg)' }}>{turno.name}</td>
+                        <td className="analista" style={{ backgroundColor: turno.color || 'var(--btn-primary-bg)' }}>(Nenhum analista)</td>
                         {Array(10).fill().map((_, i) => <td key={i}></td>)}
                         <td className="pausa"></td>
                     </tr>
                  );
                  if (index < turnosOrdenados.length - 1) {
-                     tableRows.push(<tr key={`separator-${turnoNome}`} className="separator-row"><td colSpan={headers.length}></td></tr>);
+                     tableRows.push(<tr key={`separator-${turno.name}`} className="separator-row"><td colSpan={headers.length}></td></tr>);
                  }
             }
         });
@@ -296,8 +346,7 @@ const EscalaTable = ({ analistas, turnos, folgasManuais, onManageAnalysts, onTur
                 </table>
             </div>
         );
-<<<<<<< HEAD
-    }, [analistasAtivos, turnosAtivos, isUserAdmin]);
+    }, [analistasAtivos, turnosAtivos, folgasManuaisAtivas, isUserAdmin]);
 
     const generateTables = useCallback(() => {
         if (!mes) return;
@@ -328,11 +377,6 @@ const EscalaTable = ({ analistas, turnos, folgasManuais, onManageAnalysts, onTur
         }
     }, [mes, generateTables]);
 
-    // Função handleExport corrigida para usar o servidor para PDFs
-=======
-    };
-
->>>>>>> 3a7d2720fca6b866ea98c218f4404af359e27906
     const handleExport = (format) => {
         if (!tabelas) {
             alert("Gere a escala antes de exportar.");
@@ -360,175 +404,6 @@ const EscalaTable = ({ analistas, turnos, folgasManuais, onManageAnalysts, onTur
             URL.revokeObjectURL(url);
             showToastMessage('Escala exportada para Excel!', 'fa-file-excel');
         } else if (format === 'pdf') {
-<<<<<<< HEAD
-            // Limpar o conteúdo HTML removendo elementos desnecessários para o PDF
-            const cleanContainer = container.cloneNode(true);
-            
-            // Remover botões de ação e outros elementos não necessários
-            const actionButtons = cleanContainer.querySelectorAll('.action-buttons, .btn, button');
-            actionButtons.forEach(btn => btn.remove());
-            
-            // HTML simplificado para evitar problemas de corrupção no PDF
-            const htmlContent = `
-                <!DOCTYPE html>
-                <html>
-                    <head>
-                        <meta charset="UTF-8">
-                        <title>Escala NRS - ${mes}</title>
-                        <style>
-                            body {
-                                font-family: Arial, sans-serif;
-                                font-size: 8px;
-                                margin: 0;
-                                padding: 10px;
-                                background: white;
-                            }
-                            
-                            h2 {
-                                font-size: 12px;
-                                text-align: center;
-                                margin: 10px 0;
-                                color: #333;
-                            }
-                            
-                            table {
-                                width: 100%;
-                                border-collapse: collapse;
-                                margin-bottom: 15px;
-                            }
-                            
-                            th, td {
-                                border: 1px solid #000;
-                                padding: 2px;
-                                text-align: center;
-                                font-size: 7px;
-                                vertical-align: middle;
-                            }
-                            
-                            th {
-                                background-color: #f0f0f0;
-                                font-weight: bold;
-                                font-size: 8px;
-                            }
-                            
-                            .turno {
-                                background-color: #d0d0d0;
-                                font-weight: bold;
-                                writing-mode: vertical-lr;
-                                width: 25px;
-                            }
-                            
-                            .analista {
-                                background-color: #e0e0e0;
-                                text-align: left;
-                                padding-left: 3px;
-                                font-weight: bold;
-                                width: 70px;
-                            }
-                            
-                            .folga {
-                                background-color: #ffdddd;
-                                color: #cc0000;
-                                font-weight: bold;
-                            }
-                            
-                            .ferias {
-                                background-color: #fff2cc;
-                                color: #cc6600;
-                                font-weight: bold;
-                            }
-                            
-                            .atestado {
-                                background-color: #f2ccff;
-                                color: #6600cc;
-                                font-weight: bold;
-                            }
-                            
-                            .separator-row {
-                                height: 3px;
-                            }
-                            
-                            .separator-row td {
-                                border: none;
-                                background: transparent;
-                            }
-                        </style>
-                    </head>
-                    <body>
-                        ${cleanContainer.innerHTML}
-                    </body>
-                </html>
-            `;
-            
-            // Verificar se o servidor está acessível antes de fazer a requisição
-            fetch(`${API_URL}/analistas`, { 
-                method: 'HEAD',
-                signal: AbortSignal.timeout(5000) // Timeout de 5 segundos
-            })
-            .then(() => {
-                // Servidor está respondendo, prosseguir com a geração do PDF
-                return fetch(`${API_URL}/exportar-pdf`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({ htmlContent }),
-                    signal: AbortSignal.timeout(30000) // Timeout de 30 segundos para PDF
-                });
-            })
-            .then(response => {
-                if (!response.ok) {
-                    return response.text().then(errorText => {
-                        let errorData;
-                        try {
-                            errorData = JSON.parse(errorText);
-                        } catch {
-                            errorData = { error: errorText };
-                        }
-                        throw new Error(`Erro do servidor (${response.status}): ${errorData.error || 'Erro desconhecido'}`);
-                    });
-                }
-                return response.blob();
-            })
-            .then(blob => {
-                if (blob.size === 0) {
-                    throw new Error('PDF gerado está vazio');
-                }
-                
-                console.log(`PDF recebido: ${blob.size} bytes, tipo: ${blob.type}`);
-                
-                // Criar URL e fazer download diretamente
-                const url = window.URL.createObjectURL(blob);
-                const a = document.createElement('a');
-                a.style.display = 'none';
-                a.href = url;
-                a.download = nomeArquivo;
-                document.body.appendChild(a);
-                a.click();
-                document.body.removeChild(a);
-                
-                // Aguardar um pouco antes de revogar a URL para garantir que o download começou
-                setTimeout(() => {
-                    window.URL.revokeObjectURL(url);
-                }, 1000);
-                
-                showToastMessage('Escala exportada para PDF com sucesso!', 'fa-file-pdf');
-            })
-            .catch(error => {
-                console.error("Erro ao exportar PDF:", error);
-                let errorMessage = 'Erro desconhecido ao exportar PDF';
-                
-                if (error.name === 'TypeError' && error.message.includes('fetch')) {
-                    errorMessage = 'Servidor não está respondendo. Verifique se o servidor backend está rodando na porta 3001.';
-                } else if (error.name === 'AbortError') {
-                    errorMessage = 'Timeout na geração do PDF. Tente novamente.';
-                } else if (error.message) {
-                    errorMessage = error.message;
-                }
-                
-                showToastMessage(`Falha ao carregar documento PDF: ${errorMessage}`, 'fa-exclamation-circle', true);
-            });
-=======
              const pdf = new jsPDF('l', 'mm', 'a4');
              const pageHeight = pdf.internal.pageSize.getHeight();
              let y = 10;
@@ -569,7 +444,6 @@ const EscalaTable = ({ analistas, turnos, folgasManuais, onManageAnalysts, onTur
                  showToastMessage('Erro ao exportar PDF. Tente novamente.', 'fa-exclamation-circle', true);
                  setIsExportModalOpen(false);
              });
->>>>>>> 3a7d2720fca6b866ea98c218f4404af359e27906
         }
         setIsExportModalOpen(false);
     };
@@ -589,18 +463,144 @@ const EscalaTable = ({ analistas, turnos, folgasManuais, onManageAnalysts, onTur
                 </div>
                 {isUserAdmin && (
                     <div className="page-actions">
-                        <button id="btnGerenciarAnalistas" className="btn" onClick={onManageAnalysts}><i className="fa-solid fa-users-gear"></i> Gerenciar Analistas</button>
-                        <button id="btnGerenciarTurnos" className="btn" onClick={onTurnoManage}><i className="fa-solid fa-clock"></i> Turnos</button>
+                        <button id="btnGerenciarAnalistas" className="btn" onClick={() => {
+                            console.log('Abrindo modal de analistas');
+                            setIsAnalystModalOpen(true);
+                        }}><i className="fa-solid fa-users-gear"></i> Gerenciar Analistas</button>
+                        <button id="btnGerenciarTurnos" className="btn" onClick={() => {
+                            console.log('Abrindo modal de turnos');
+                            setIsShiftModalOpen(true);
+                        }}><i className="fa-solid fa-clock"></i> Turnos</button>
                         <button id="btnExportar" className="btn" onClick={() => setIsExportModalOpen(true)}><i className="fa-solid fa-download"></i> Exportar</button>
                     </div>
                 )}
             </div>
             {showWelcome && (
-                <div id="welcome-screen" className="welcome-screen">
-                    <img src="/images/image_979eb5.png" alt="Logo Equipe NRS" className="logo-welcome" />
-                    <div className="text-container">
-                        <h2 className="welcome-title">Bem-vindo(a) à Escala NRS!</h2>
-                        <p className="welcome-subtitle">Selecione o mês e clique em <strong>"Gerar Escala"</strong> para começar.</p>
+                <div id="welcome-screen" className="escala-generator">
+                    <div className="generator-header">
+                        <div className="header-icon">
+                            <i className="fas fa-magic"></i>
+                        </div>
+                        <h2>Gerador Inteligente de Escalas</h2>
+                        <p>Configure e gere escalas otimizadas automaticamente</p>
+                    </div>
+
+                    <div className="generator-content">
+                        {/* Configurações Rápidas */}
+                        <div className="quick-config">
+                            <h3><i className="fas fa-bolt"></i> Configuração Rápida</h3>
+                            <div className="config-grid">
+                                <div className="config-card active">
+                                    <div className="config-icon">
+                                        <i className="fas fa-balance-scale"></i>
+                                    </div>
+                                    <h4>Balanceada</h4>
+                                    <p>Distribui uniformemente as folgas</p>
+                                </div>
+                                <div className="config-card">
+                                    <div className="config-icon">
+                                        <i className="fas fa-calendar-weekend"></i>
+                                    </div>
+                                    <h4>Fins de Semana</h4>
+                                    <p>Prioriza folgas nos fins de semana</p>
+                                </div>
+                                <div className="config-card">
+                                    <div className="config-icon">
+                                        <i className="fas fa-sync-alt"></i>
+                                    </div>
+                                    <h4>Rotativa</h4>
+                                    <p>Alterna folgas entre analistas</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Estatísticas Pré-visualização */}
+                        <div className="preview-stats">
+                            <h3><i className="fas fa-chart-pie"></i> Estatísticas do Mês</h3>
+                            <div className="stats-grid">
+                                <div className="stat-item">
+                                    <div className="stat-number">{analysts.length}</div>
+                                    <div className="stat-label">Analistas Ativos</div>
+                                </div>
+                                <div className="stat-item">
+                                    <div className="stat-number">{shifts.length}</div>
+                                    <div className="stat-label">Turnos</div>
+                                </div>
+                                <div className="stat-item">
+                                    <div className="stat-number">{mes ? new Date(mes.split('-')[0], mes.split('-')[1], 0).getDate() : 30}</div>
+                                    <div className="stat-label">Dias no Mês</div>
+                                </div>
+                                <div className="stat-item">
+                                    <div className="stat-number">{mes ? Math.ceil(new Date(mes.split('-')[0], mes.split('-')[1], 0).getDate() * analysts.length / 4) : Math.ceil(30 * analysts.length / 4)}</div>
+                                    <div className="stat-label">Total de Folgas</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Opções Avançadas */}
+                        <div className="advanced-options">
+                            <h3><i className="fas fa-cogs"></i> Opções Avançadas</h3>
+                            <div className="options-grid">
+                                <label className="option-checkbox">
+                                    <input type="checkbox" defaultChecked />
+                                    <span className="checkmark"></span>
+                                    <div className="option-info">
+                                        <strong>Balanceamento Automático</strong>
+                                        <small>Ajusta automaticamente para distribuir folgas igualmente</small>
+                                    </div>
+                                </label>
+                                <label className="option-checkbox">
+                                    <input type="checkbox" defaultChecked />
+                                    <span className="checkmark"></span>
+                                    <div className="option-info">
+                                        <strong>Evitar Folgas Consecutivas</strong>
+                                        <small>Minimiza folgas seguidas para o mesmo analista</small>
+                                    </div>
+                                </label>
+                                <label className="option-checkbox">
+                                    <input type="checkbox" />
+                                    <span className="checkmark"></span>
+                                    <div className="option-info">
+                                        <strong>Priorizar Fins de Semana</strong>
+                                        <small>Tenta colocar mais folgas nos sábados e domingos</small>
+                                    </div>
+                                </label>
+                            </div>
+                        </div>
+
+                        {/* Botões de Ação */}
+                        <div className="generator-actions">
+                            <button className="btn-preview">
+                                <i className="fas fa-eye"></i>
+                                Visualizar Preview
+                            </button>
+                            <button className="btn-generate primary" onClick={() => { generateTables(); showToastMessage('Escala gerada com sucesso!', 'fa-calendar-check'); }}>
+                                <i className="fas fa-magic"></i>
+                                Gerar Escala Inteligente
+                            </button>
+                        </div>
+
+                        {/* Templates Salvos */}
+                        <div className="saved-templates">
+                            <h3><i className="fas fa-bookmark"></i> Templates Salvos</h3>
+                            <div className="templates-list">
+                                <div className="template-item">
+                                    <i className="fas fa-star"></i>
+                                    <span>Escala Padrão NRS</span>
+                                    <button className="btn-load">Carregar</button>
+                                </div>
+                                <div className="template-item">
+                                    <i className="fas fa-calendar-alt"></i>
+                                    <span>Feriados 2024</span>
+                                    <button className="btn-load">Carregar</button>
+                                </div>
+                                <div className="template-item">
+                                    <i className="fas fa-users"></i>
+                                    <span>Férias Coletivas</span>
+                                    <button className="btn-load">Carregar</button>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
             )}
@@ -621,13 +621,33 @@ const EscalaTable = ({ analistas, turnos, folgasManuais, onManageAnalysts, onTur
                 {editingCellData && (
                     <EditEscalaModal
                         data={editingCellData}
-                        analistas={analistas}
+                        analistas={analistasAtivos}
                         onSave={onSaveFolgaManual}
                         onCancel={() => setIsEditEscalaModalOpen(false)}
-                        folgasManuais={folgasManuais}
+                        folgasManuais={folgasManuaisAtivas}
                     />
                 )}
             </Modal>
+
+            {/* Modal de Gerenciamento de Analistas */}
+            <AnalystManagementModal
+                isOpen={isAnalystModalOpen}
+                onClose={() => setIsAnalystModalOpen(false)}
+                analysts={analysts}
+                onSave={handleSaveAnalyst}
+                onDelete={handleDeleteAnalyst}
+                onReorder={handleReorderAnalysts}
+            />
+
+            {/* Modal de Gerenciamento de Turnos */}
+            <ShiftManagementModal
+                isOpen={isShiftModalOpen}
+                onClose={() => setIsShiftModalOpen(false)}
+                shifts={shifts}
+                onSave={handleSaveShift}
+                onDelete={handleDeleteShift}
+                onReorder={handleReorderShifts}
+            />
         </>
     );
 };

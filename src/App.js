@@ -1,31 +1,20 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import axios from 'axios';
-<<<<<<< HEAD
 import config from './config';
-=======
->>>>>>> 3a7d2720fca6b866ea98c218f4404af359e27906
+import Login from './components/Login';
 import Navbar from './components/Navbar';
 import EscalaTable from './components/EscalaTable';
 import CalendarComponent from './components/Calendar';
 import KnowledgeBase from './components/KnowledgeBase';
-<<<<<<< HEAD
-import Dashboard from './components/Dashboard';
-=======
->>>>>>> 3a7d2720fca6b866ea98c218f4404af359e27906
-import Modal from './components/Modal';
-import AnalystManagementModal from './components/AnalystManagementModal';
-import AnalistaForm from './components/AnalistaForm';
-import TurnoModal from './components/TurnoModal';
-import EventoForm from './components/EventoForm';
-import SettingsModal from './components/SettingsModal';
-import Login from './components/Login';
 import UserManagement from './components/UserManagement';
-import ForgotPasswordModal from './components/ForgotPasswordModal';
-import ResetPasswordModal from './components/ResetPasswordModal';
-import { KNOWLEDGE_BASE } from './data/appData';
+import SettingsModal from './components/SettingsModal';
 import Toast from './components/Toast';
+import { KNOWLEDGE_BASE } from './data/appData';
+import './styles/nexus.css';
 
 const App = () => {
+    console.log('🚀 Nexus - Smart Management Solutions iniciando...');
+    
     const [currentPage, setCurrentPage] = useState('dashboard');
     const [theme, setTheme] = useState(localStorage.getItem('theme') || 'light');
     const [showToast, setShowToast] = useState(false);
@@ -54,24 +43,15 @@ const App = () => {
     };
     
     const [user, setUser] = useState(getInitialUser());
-    const [isAnalystManagementModalOpen, setIsAnalystManagementModalOpen] = useState(false);
-    const [isAnalistaModalOpen, setIsAnalistaModalOpen] = useState(false);
-<<<<<<< HEAD
-    const [editingAnalista] = useState(null);
+    const [isSettingsModalOpen, setIsSettingsModalOpen] = useState(false);
     
     const API_URL = config.API_URL;
-=======
-    const [editingAnalista, setEditingAnalista] = useState(null);
-    
-    const API_URL = 'http://localhost:3001/api';
->>>>>>> 3a7d2720fca6b866ea98c218f4404af359e27906
+    console.log('🔗 API URL:', API_URL);
 
-    // Configura um cliente Axios com cabeçalhos padrão
     const api = axios.create({
         baseURL: API_URL
     });
 
-    // Interceptor para adicionar o header em todas as requisições
     api.interceptors.request.use(config => {
         if (user && user.id) {
             config.headers['x-user-id'] = user.id;
@@ -81,12 +61,9 @@ const App = () => {
         return Promise.reject(error);
     });
     
-<<<<<<< HEAD
     const fetchData = useCallback(async () => {
-=======
-    const fetchData = async () => {
->>>>>>> 3a7d2720fca6b866ea98c218f4404af359e27906
         try {
+            console.log('🔄 Buscando dados da API...');
             const [analistasRes, turnosRes, eventosRes, folgasManuaisRes, usersRes] = await Promise.all([
                 api.get('/analistas'),
                 api.get('/turnos'),
@@ -96,46 +73,37 @@ const App = () => {
             ]);
 
             const turnosData = turnosRes.data.reduce((acc, curr) => {
-<<<<<<< HEAD
-                // Usar 'nome' se existir, senão usar 'name' para compatibilidade
                 const nomeTurno = curr.nome || curr.name;
                 acc[nomeTurno] = curr;
-=======
-                acc[curr.name] = curr;
->>>>>>> 3a7d2720fca6b866ea98c218f4404af359e27906
                 return acc;
             }, {});
 
             setData({
-                analistas: analistasRes.data,
-                turnos: turnosData,
-                eventos: eventosRes.data,
-                folgasManuais: folgasManuaisRes.data,
-                users: usersRes.data
+                analistas: analistasRes.data || [],
+                turnos: turnosData || {},
+                eventos: eventosRes.data || [],
+                folgasManuais: folgasManuaisRes.data || {},
+                users: usersRes.data || []
             });
+            console.log('✅ Dados carregados com sucesso');
         } catch (error) {
-            console.error("Failed to fetch data from API", error);
+            console.error("❌ Erro ao buscar dados da API:", error);
+            setData({
+                analistas: [],
+                turnos: {},
+                eventos: [],
+                folgasManuais: {},
+                users: []
+            });
         }
-<<<<<<< HEAD
-    }, []);
+    }, [api]);
     
     useEffect(() => {
-        // Carregar dados apenas uma vez na inicialização
-        fetchData();
-    }, [fetchData]);
-=======
-    };
-    
-    useEffect(() => {
-        fetchData();
-    }, [user]);
->>>>>>> 3a7d2720fca6b866ea98c218f4404af359e27906
-
-    const [isTurnoModalOpen, setIsTurnoModalOpen] = useState(false);
-    const [isEventoModalOpen, setIsEventoModalOpen] = useState(false);
-    const [isSettingsModalOpen, setIsSettingsModalOpen] = useState(false);
-    const [isForgotPasswordModalOpen, setIsForgotPasswordModalOpen] = useState(false);
-    const [editingEvento, setEditingEvento] = useState(null);
+        if (user) {
+            console.log('🔄 Carregando dados para usuário logado...');
+            fetchData();
+        }
+    }, [user, fetchData]);
 
     const showToastMessage = useCallback((message, icon, isError = false) => {
         setToastMessage(message);
@@ -152,20 +120,39 @@ const App = () => {
     
     const handleLogin = async (email, password) => {
         try {
-<<<<<<< HEAD
+            console.log('🔐 Tentando fazer login...');
+            
+            // Validação básica
+            if (!email || !password) {
+                showToastMessage('Por favor, preencha todos os campos.', 'fa-exclamation-triangle', true);
+                return;
+            }
+            
+            if (!email.includes('@')) {
+                showToastMessage('Por favor, insira um email válido.', 'fa-exclamation-triangle', true);
+                return;
+            }
+            
+            showToastMessage('Verificando credenciais...', 'fa-spinner fa-spin');
+            
             const response = await api.post('/login', { email, password });
             setUser(response.data.user);
             localStorage.setItem('currentUser', JSON.stringify(response.data.user));
             showToastMessage(`Olá, ${response.data.user.username}! Login realizado com sucesso.`, 'fa-check');
-=======
-            const response = await axios.post(`${API_URL}/login`, { email, password });
-            setUser(response.data);
-            localStorage.setItem('currentUser', JSON.stringify(response.data));
-            showToastMessage(`Olá, ${response.data.username}! Login realizado com sucesso.`, 'fa-check');
->>>>>>> 3a7d2720fca6b866ea98c218f4404af359e27906
             setCurrentPage('dashboard');
+            console.log('✅ Login realizado com sucesso');
         } catch (error) {
-            showToastMessage('Dados de login incorretos. Por favor, tente novamente.', 'fa-exclamation-circle', true);
+            console.error('❌ Erro no login:', error);
+            
+            if (error.response?.status === 401) {
+                showToastMessage('Email ou senha incorretos. Verifique suas credenciais.', 'fa-exclamation-circle', true);
+            } else if (error.response?.status === 400) {
+                showToastMessage('Dados inválidos. Verifique o formato do email e senha.', 'fa-exclamation-triangle', true);
+            } else if (error.code === 'NETWORK_ERROR' || !navigator.onLine) {
+                showToastMessage('Erro de conexão. Verifique sua internet e tente novamente.', 'fa-wifi', true);
+            } else {
+                showToastMessage('Erro interno do servidor. Tente novamente em alguns minutos.', 'fa-server', true);
+            }
         }
     };
 
@@ -176,312 +163,380 @@ const App = () => {
     };
 
     const handleNavigation = (pageId) => {
+        console.log('🔄 Navegando para:', pageId);
         setCurrentPage(pageId);
     };
 
     const handleToggleTheme = () => {
-        setTheme(prevTheme => prevTheme === 'light' ? 'dark' : 'light');
+        const newTheme = theme === 'light' ? 'dark' : 'light';
+        setTheme(newTheme);
+        showToastMessage(
+            newTheme === 'dark' ? 'Tema escuro ativado!' : 'Tema claro ativado!', 
+            newTheme === 'dark' ? 'fa-moon' : 'fa-sun'
+        );
     };
 
     const isUserAdmin = user && user.role === 'admin';
-
-    const handleAddOrEditAnalista = async (analista) => {
-        if (!isUserAdmin) {
-            showToastMessage('Você não tem permissão para realizar esta ação.', 'fa-lock', true);
-            return;
-        }
-        try {
-            if (analista.id) {
-                await api.put(`/analistas/${analista.id}`, analista);
-                showToastMessage(`Analista ${analista.nome} foi atualizado com sucesso!`, 'fa-check');
-            } else {
-                await api.post(`/analistas`, analista);
-                showToastMessage(`Novo analista ${analista.nome} adicionado à equipe!`, 'fa-check');
-            }
-            fetchData();
-            setIsAnalistaModalOpen(false);
-        } catch (error) {
-            showToastMessage(error.response?.data?.error || 'Erro ao salvar analista.', 'fa-exclamation-circle', true);
-        }
-    };
-
-    const handleDeleteAnalista = async (id) => {
-        if (!isUserAdmin) {
-            showToastMessage('Você não tem permissão para realizar esta ação.', 'fa-lock', true);
-            return;
-        }
-        if (window.confirm("Tem certeza que deseja remover este analista?")) {
-            try {
-                await api.delete(`/analistas/${id}`);
-                fetchData();
-                showToastMessage('Analista removido da equipe com sucesso!', 'fa-trash-can');
-            } catch (error) {
-                 showToastMessage(error.response?.data?.error || 'Erro ao remover analista.', 'fa-exclamation-circle', true);
-            }
-        }
-    };
-
-    const handleAddOrEditTurno = async (turno) => {
-        if (!isUserAdmin) {
-            showToastMessage('Você não tem permissão para realizar esta ação.', 'fa-lock', true);
-            return;
-        }
-        try {
-            if (turno.originalName) {
-                await api.put(`/turnos/${turno.originalName}`, { newName: turno.name, ...turno.details });
-                showToastMessage(`Turno "${turno.name}" atualizado com sucesso!`, 'fa-check');
-            } else {
-                await api.post(`/turnos`, { name: turno.name, ...turno.details });
-                showToastMessage(`Novo turno "${turno.name}" criado com sucesso!`, 'fa-check');
-            }
-            fetchData();
-        } catch (error) {
-            showToastMessage(error.response?.data?.error || 'Erro ao salvar turno.', 'fa-exclamation-circle', true);
-        }
-    };
-
-    const handleDeleteTurno = async (name) => {
-        if (!isUserAdmin) {
-            showToastMessage('Você não tem permissão para realizar esta ação.', 'fa-lock', true);
-            return;
-        }
-        if (window.confirm(`Tem certeza que deseja remover o turno "${name}"? Isso irá remover todos os analistas deste turno."`)) {
-            try {
-                await api.delete(`/turnos/${name}`);
-                fetchData();
-                showToastMessage(`O turno "${name}" foi removido com sucesso!`, 'fa-trash-can');
-            } catch (error) {
-                showToastMessage(error.response?.data?.error || 'Erro ao remover turno.', 'fa-exclamation-circle', true);
-            }
-        }
-    };
-
-    const handleReorderTurnos = async (newOrder) => {
-        if (!isUserAdmin) {
-            showToastMessage('Você não tem permissão para realizar esta ação.', 'fa-lock', true);
-            return;
-        }
-        try {
-            await api.post(`/turnos/reorder`, { newOrder });
-            fetchData();
-            showToastMessage('Ordem dos turnos salva com sucesso!', 'fa-arrows-up-down-left-right');
-        } catch (error) {
-            showToastMessage(error.response?.data?.error || 'Erro ao reordenar turnos.', 'fa-exclamation-circle', true);
-        }
-    };
-
-    const handleAddOrEditEvento = async (evento) => {
-        // Ação de adicionar evento é permitida para todos os usuários
-        if (!isUserAdmin && evento.id) {
-            showToastMessage('Você não tem permissão para realizar esta ação.', 'fa-lock', true);
-            return;
-        }
-        try {
-            if (evento.id) {
-                await api.put(`/eventos/${evento.id}`, evento);
-                showToastMessage(`Evento "${evento.titulo}" atualizado!`, 'fa-check');
-            } else {
-                await api.post(`/eventos`, evento);
-                showToastMessage(`Evento "${evento.titulo}" adicionado ao calendário!`, 'fa-calendar-plus');
-            }
-            fetchData();
-            setIsEventoModalOpen(false);
-        } catch (error) {
-            showToastMessage(error.response?.data?.error || 'Erro ao salvar evento.', 'fa-exclamation-circle', true);
-        }
-    };
-
-    const handleDeleteEvento = async (id) => {
-        if (!isUserAdmin) {
-            showToastMessage('Você não tem permissão para realizar esta ação.', 'fa-lock', true);
-            return;
-        }
-        if (window.confirm("Tem certeza que deseja remover este evento?")) {
-            try {
-                await api.delete(`/eventos/${id}`);
-                fetchData();
-                showToastMessage('Evento removido do calendário.', 'fa-trash-can');
-            } catch (error) {
-                showToastMessage(error.response?.data?.error || 'Erro ao remover evento.', 'fa-exclamation-circle', true);
-            }
-        }
-    };
-
-    const handleSaveFolgaManual = async (folgaData) => {
-        if (!isUserAdmin) {
-            showToastMessage('Você não tem permissão para realizar esta ação.', 'fa-lock', true);
-            return;
-        }
-        try {
-            await api.post(`/folgas-manuais`, folgaData);
-            fetchData();
-            showToastMessage('Dia alterado na escala com sucesso!', 'fa-check');
-        } catch (error) {
-            showToastMessage(error.response?.data?.error || 'Erro ao alterar dia.', 'fa-exclamation-circle', true);
-        }
-    };
+    const canManageUsers = user && user.role === 'admin';
 
     const handleSaveUser = async (newUser) => {
-        if (!isUserAdmin) {
+        console.log('💾 Salvando usuário:', newUser);
+        
+        if (!canManageUsers) {
             showToastMessage('Você não tem permissão para realizar esta ação.', 'fa-lock', true);
             return;
         }
+        
+        
         try {
+            console.log('🔄 Enviando dados para API...');
+            
+            // Usar fetch diretamente para evitar problemas com axios
+            const baseUrl = config.API_URL;
+            const url = newUser.id 
+                ? `${baseUrl}/users/${newUser.id}`
+                : `${baseUrl}/users`;
+            
+            const method = newUser.id ? 'PUT' : 'POST';
+            
+            console.log('🌐 URL:', url);
+            console.log('📡 Método:', method);
+            
+            const response = await fetch(url, {
+                method: method,
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(newUser)
+            });
+            
+            console.log('📊 Status da resposta:', response.status);
+            
+            if (!response.ok) {
+                let errorMessage = `HTTP ${response.status}`;
+                try {
+                    const errorText = await response.text();
+                    console.error('❌ Resposta de erro:', errorText);
+                    // Tentar fazer parse do JSON se possível
+                    try {
+                        const errorData = JSON.parse(errorText);
+                        errorMessage = errorData.error || errorMessage;
+                    } catch {
+                        errorMessage = `Erro do servidor: ${response.status}`;
+                    }
+                } catch (textError) {
+                    console.error('❌ Erro ao ler resposta:', textError);
+                    errorMessage = `Erro do servidor: ${response.status}`;
+                }
+                throw new Error(errorMessage);
+            }
+            
+            const result = await response.json();
+            console.log('✅ Resposta da API:', result);
+            
             if (newUser.id) {
-                await api.put(`/users/${newUser.id}`, newUser);
                 showToastMessage('Dados do usuário atualizados!', 'fa-check');
             } else {
-                await api.post(`/users`, newUser);
                 showToastMessage('Novo usuário criado com sucesso!', 'fa-user-plus');
             }
-            fetchData();
+            
+            console.log('🔄 Recarregando dados...');
+            await fetchData();
+            console.log('✅ Usuário salvo com sucesso');
         } catch (error) {
-            showToastMessage(error.response?.data?.error || 'Erro ao salvar usuário.', 'fa-exclamation-circle', true);
+            console.error('❌ Erro ao salvar usuário:', error);
+            showToastMessage(error.message || 'Erro ao salvar usuário.', 'fa-exclamation-circle', true);
         }
     };
 
     const handleDeleteUser = async (id) => {
-        if (!isUserAdmin) {
+        console.log('🗑️ Deletando usuário:', id);
+        
+        if (!canManageUsers) {
             showToastMessage('Você não tem permissão para realizar esta ação.', 'fa-lock', true);
             return;
         }
+        
+        // Encontrar o usuário a ser deletado
+        const userToDelete = data.users?.find(u => u.id === id);
+        if (userToDelete && userToDelete.role === 'admin') {
+            showToastMessage('Administradores não podem ser excluídos.', 'fa-shield', true);
+            return;
+        }
+        
+        
         if (window.confirm("Tem certeza que deseja remover este usuário?")) {
             try {
-                await api.delete(`/users/${id}`);
-                fetchData();
+                console.log('🔄 Enviando requisição de exclusão...');
+                
+                const baseUrl = config.API_URL;
+                const url = `${baseUrl}/users/${id}`;
+                console.log('🌐 URL:', url);
+                
+                const response = await fetch(url, {
+                    method: 'DELETE',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    }
+                });
+                
+                console.log('📊 Status da resposta:', response.status);
+                
+                if (!response.ok) {
+                    let errorMessage = `HTTP ${response.status}`;
+                    try {
+                        const errorText = await response.text();
+                        console.error('❌ Resposta de erro:', errorText);
+                        // Tentar fazer parse do JSON se possível
+                        try {
+                            const errorData = JSON.parse(errorText);
+                            errorMessage = errorData.error || errorMessage;
+                        } catch {
+                            errorMessage = `Erro do servidor: ${response.status}`;
+                        }
+                    } catch (textError) {
+                        console.error('❌ Erro ao ler resposta:', textError);
+                        errorMessage = `Erro do servidor: ${response.status}`;
+                    }
+                    throw new Error(errorMessage);
+                }
+                
+                console.log('🔄 Recarregando dados...');
+                await fetchData();
                 showToastMessage('Usuário removido permanentemente.', 'fa-trash-can');
+                console.log('✅ Usuário deletado com sucesso');
             } catch (error) {
-                showToastMessage(error.response?.data?.error || 'Erro ao remover usuário.', 'fa-exclamation-circle', true);
+                console.error('❌ Erro ao deletar usuário:', error);
+                showToastMessage(error.message || 'Erro ao remover usuário.', 'fa-exclamation-circle', true);
             }
         }
     };
 
-    const query = new URLSearchParams(window.location.search);
-    const resetToken = query.get('token');
-    const [isResetPasswordModalOpen, setIsResetPasswordModal] = useState(!!resetToken);
-
-    if (resetToken && !user) {
-      return (
-        <ResetPasswordModal
-          show={isResetPasswordModalOpen}
-          token={resetToken}
-          onClose={() => {
-            setIsResetPasswordModal(false);
-            window.history.replaceState({}, document.title, window.location.pathname);
-          }}
-        />
-      );
-    }
-
     if (!user) {
+        console.log('🔐 Usuário não logado, mostrando tela de login');
         return (
             <>
-                <Login onLogin={handleLogin} onForgotPassword={() => setIsForgotPasswordModalOpen(true)} />
-                <ForgotPasswordModal show={isForgotPasswordModalOpen} onClose={() => setIsForgotPasswordModalOpen(false)} showToastMessage={showToastMessage} />
+                <Login onLogin={handleLogin} onForgotPassword={() => {}} />
                 <Toast show={showToast} message={toastMessage} icon={toastIcon} isError={isToastError} />
             </>
         );
     }
 
-    const pages = {
-<<<<<<< HEAD
-        'dashboard': <Dashboard 
+    console.log('👤 Usuário logado:', user);
+    console.log('📊 Dados carregados:', data);
+    console.log('📄 Página atual:', currentPage);
+
+    const renderPage = () => {
+        switch(currentPage) {
+            case 'dashboard':
+                return (
+                    <div className="nexus-dashboard">
+                        <div className="dashboard-hero">
+                            <div className="hero-content">
+                                <div className="hero-text">
+                                    <h1>Bem-vindo ao <span className="nexus-brand">Nexus</span></h1>
+                                    <p className="hero-subtitle">Smart Management Solutions</p>
+                                    <p className="hero-description">
+                                        Gerencie sua equipe com eficiência e inteligência. 
+                                        Controle escalas, eventos e recursos em uma plataforma unificada.
+                                    </p>
+                                </div>
+                                <div className="hero-illustration">
+                                    <div className="floating-cards">
+                                        <div className="floating-card card-1">
+                                            <i className="fa-solid fa-calendar-days"></i>
+                                        </div>
+                                        <div className="floating-card card-2">
+                                            <i className="fa-solid fa-users"></i>
+                                        </div>
+                                        <div className="floating-card card-3">
+                                            <i className="fa-solid fa-chart-line"></i>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div className="dashboard-stats">
+                            <div className="stat-card featured">
+                                <div className="stat-icon">
+                                    <i className="fa-solid fa-users"></i>
+                                </div>
+                                <div className="stat-content">
+                                    <h3>{data.analistas?.length || 0}</h3>
+                                    <p>Analistas Ativos</p>
+                                    <div className="stat-trend">
+                                        <i className="fa-solid fa-arrow-up"></i>
+                                        <span>+12% este mês</span>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div className="stat-card">
+                                <div className="stat-icon">
+                                    <i className="fa-solid fa-clock"></i>
+                                </div>
+                                <div className="stat-content">
+                                    <h3>{Object.keys(data.turnos || {}).length}</h3>
+                                    <p>Turnos</p>
+                                </div>
+                            </div>
+                            
+                            <div className="stat-card">
+                                <div className="stat-icon">
+                                    <i className="fa-solid fa-calendar"></i>
+                                </div>
+                                <div className="stat-content">
+                                    <h3>{data.eventos?.length || 0}</h3>
+                                    <p>Eventos</p>
+                                </div>
+                            </div>
+                            
+                            <div className="stat-card">
+                                <div className="stat-icon">
+                                    <i className="fa-solid fa-chart-line"></i>
+                                </div>
+                                <div className="stat-content">
+                                    <h3>98%</h3>
+                                    <p>Eficiência</p>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div className="dashboard-actions">
+                            <div className="action-card primary">
+                                <div className="action-icon">
+                                    <i className="fa-solid fa-calendar-days"></i>
+                                </div>
+                                <div className="action-content">
+                                    <h3>Escala de Trabalho</h3>
+                                    <p>Gerencie escalas e turnos da equipe com precisão e flexibilidade</p>
+                                    <button onClick={() => setCurrentPage('escala')} className="action-button">
+                                        <i className="fa-solid fa-arrow-right"></i>
+                                        Acessar Escala
+                                    </button>
+                                </div>
+                            </div>
+                            
+                            <div className="action-card">
+                                <div className="action-icon">
+                                    <i className="fa-solid fa-calendar-check"></i>
+                                </div>
+                                <div className="action-content">
+                                    <h3>Calendário</h3>
+                                    <p>Visualize eventos e agendamentos em tempo real</p>
+                                    <button onClick={() => setCurrentPage('calendario')} className="action-button">
+                                        <i className="fa-solid fa-arrow-right"></i>
+                                        Ver Calendário
+                                    </button>
+                                </div>
+                            </div>
+                            
+                            <div className="action-card">
+                                <div className="action-icon">
+                                    <i className="fa-solid fa-book"></i>
+                                </div>
+                                <div className="action-content">
+                                    <h3>Base de Conhecimentos</h3>
+                                    <p>Documentação e recursos da equipe centralizados</p>
+                                    <button onClick={() => setCurrentPage('base-conhecimentos')} className="action-button">
+                                        <i className="fa-solid fa-arrow-right"></i>
+                                        Acessar Base
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div className="dashboard-footer">
+                            <div className="user-info-card">
+                                <div className="user-avatar">
+                                    <i className="fa-solid fa-user"></i>
+                                </div>
+                                <div className="user-details">
+                                    <h3>{user.username}</h3>
+                                    <p>{user.email}</p>
+                                    <span className="user-role">{user.role}</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                );
+            case 'escala':
+                return (
+                    <EscalaTable
                         analistas={data.analistas}
                         turnos={data.turnos}
-                        eventos={data.eventos}
+                        folgasManuais={data.folgasManuais}
+                        onManageAnalysts={() => showToastMessage('Funcionalidade em desenvolvimento', 'fa-info-circle')}
+                        onTurnoManage={() => showToastMessage('Funcionalidade em desenvolvimento', 'fa-info-circle')}
+                        onSaveFolgaManual={isUserAdmin ? () => showToastMessage('Funcionalidade em desenvolvimento', 'fa-info-circle') : null}
                         user={user}
-                    />,
-=======
-        'dashboard': <div className="content-placeholder"><p>Página em desenvolvimento. Em breve, adicionaremos aqui as informações e ferramentas mais importantes para a sua gestão diária!</p></div>,
->>>>>>> 3a7d2720fca6b866ea98c218f4404af359e27906
-        'escala': <EscalaTable
-                    analistas={data.analistas}
-                    turnos={data.turnos}
-                    folgasManuais={data.folgasManuais}
-                    onManageAnalysts={() => setIsAnalystManagementModalOpen(true)}
-                    onTurnoManage={() => setIsTurnoModalOpen(true)}
-                    onSaveFolgaManual={isUserAdmin ? handleSaveFolgaManual : null}
-                    user={user}
-                    showToastMessage={showToastMessage}
-                />,
-        'calendario': <CalendarComponent
+                        showToastMessage={showToastMessage}
+                    />
+                );
+            case 'calendario':
+                return (
+                    <CalendarComponent
                         analistas={data.analistas}
                         eventos={data.eventos}
                         feriados={KNOWLEDGE_BASE.feriados}
-                        onAddEvent={() => { setEditingEvento(null); setIsEventoModalOpen(true); }}
-                        onEditEvent={isUserAdmin ? (evento) => { setEditingEvento(evento); setIsEventoModalOpen(true); } : null}
-                        onDeleteEvent={isUserAdmin ? handleDeleteEvento : null}
+                        onAddEvent={() => {}}
+                        onEditEvent={isUserAdmin ? () => {} : null}
+                        onDeleteEvent={isUserAdmin ? () => {} : null}
                         user={user}
                         showToastMessage={showToastMessage}
-                    />,
-        'base-conhecimentos': <KnowledgeBase
-                                data={KNOWLEDGE_BASE}
-                            />,
-        'gerenciar-usuarios': <UserManagement
-                                users={data.users}
-                                onSaveUser={handleSaveUser}
-                                onDeleteUser={handleDeleteUser}
-                            />,
-        'manuais-operacionais': <div className="content-placeholder"><p>Esta é a página dedicada aos manuais operacionais. Adicione aqui os seus documentos, guias e vídeos para a equipe.</p></div>
+                    />
+                );
+            case 'base-conhecimentos':
+                return (
+                    <KnowledgeBase
+                        data={KNOWLEDGE_BASE}
+                    />
+                );
+            case 'gerenciar-usuarios':
+                return (
+                    <UserManagement
+                        users={data.users || []}
+                        onSaveUser={handleSaveUser}
+                        onDeleteUser={handleDeleteUser}
+                    />
+                );
+            default:
+                return (
+                    <div className="content-placeholder">
+                        <h2>Página não encontrada</h2>
+                        <p>A página solicitada não existe.</p>
+                    </div>
+                );
+        }
     };
-    
-    if (!isUserAdmin && currentPage === 'gerenciar-usuarios') {
-        setCurrentPage('dashboard');
-    }
 
+    console.log('🎨 Renderizando interface principal...');
     return (
         <div className="main-content">
-            <Navbar onNavigate={handleNavigation} onSettingsToggle={() => setIsSettingsModalOpen(true)} currentPage={currentPage} user={user} onLogout={handleLogout} />
+            <Navbar 
+                onNavigate={handleNavigation} 
+                onSettingsToggle={() => setIsSettingsModalOpen(true)} 
+                currentPage={currentPage} 
+                user={user} 
+                onLogout={handleLogout} 
+            />
             <main id="app-container">
-                {Object.keys(pages).map(pageId => (
-                    <section key={pageId} id={pageId} className={`page ${currentPage === pageId ? 'active' : ''}`}>
-                        {pages[pageId]}
-                    </section>
-                ))}
+                <section id={currentPage} className="page active">
+                    {renderPage()}
+                </section>
             </main>
             
-            <Modal show={isAnalistaModalOpen} onClose={() => setIsAnalistaModalOpen(false)}>
-                {isUserAdmin && <AnalistaForm 
-                    analista={editingAnalista}
-                    turnos={data.turnos}
-                    onSave={handleAddOrEditAnalista}
-                    onCancel={() => setIsAnalistaModalOpen(false)}
-                />}
-            </Modal>
-
-            <Modal show={isTurnoModalOpen} onClose={() => setIsTurnoModalOpen(false)}>
-                {isUserAdmin && <TurnoModal
-                    turnos={data.turnos}
-                    analistas={data.analistas}
-                    onSave={handleAddOrEditTurno}
-                    onDelete={handleDeleteTurno}
-                    onReorder={handleReorderTurnos}
-                    onCancel={() => setIsTurnoModalOpen(false)}
-                />}
-            </Modal>
-
-            <Modal show={isEventoModalOpen} onClose={() => setIsEventoModalOpen(false)}>
-                {isUserAdmin && <EventoForm
-                    evento={editingEvento}
-                    analistas={data.analistas}
-                    onSave={handleAddOrEditEvento}
-                    onCancel={() => setIsEventoModalOpen(false)}
-                />}
-            </Modal>
-            
-            <SettingsModal show={isSettingsModalOpen} onClose={() => setIsSettingsModalOpen(false)} onToggleTheme={handleToggleTheme} theme={theme} />
+            <SettingsModal 
+                show={isSettingsModalOpen} 
+                onClose={() => setIsSettingsModalOpen(false)} 
+                onToggleTheme={handleToggleTheme} 
+                theme={theme}
+                user={user}
+                showToastMessage={showToastMessage}
+            />
             
             <Toast show={showToast} message={toastMessage} icon={toastIcon} isError={isToastError} />
-
-            {/* Novo modal para gerenciar analistas */}
-            <AnalystManagementModal
-                show={isAnalystManagementModalOpen}
-                onClose={() => setIsAnalystManagementModalOpen(false)}
-                analysts={data.analistas}
-                turnos={data.turnos}
-                onSave={handleAddOrEditAnalista}
-                onDelete={handleDeleteAnalista}
-            />
         </div>
     );
 };

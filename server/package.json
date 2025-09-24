@@ -3,7 +3,6 @@
   "version": "1.0.0",
   "description": "Backend for Gestão NRS app",
   "main": "server.js",
-<<<<<<< HEAD
   "type": "module",
   "scripts": {
     "start": "node simple-firebase-server.js",
@@ -17,15 +16,6 @@
     "multer": "^2.0.2",
     "nanoid": "^5.0.7",
     "puppeteer": "^24.21.0",
-=======
-  "scripts": {
-    "start": "node server.js"
-  },
-  "dependencies": {
-    "cors": "^2.8.5",
-    "express": "^4.19.2",
-    "multer": "^2.0.2",
->>>>>>> 3a7d2720fca6b866ea98c218f4404af359e27906
     "sqlite3": "^5.1.7",
     "xlsx": "^0.18.5"
   },

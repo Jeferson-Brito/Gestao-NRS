@@ -1571,7 +1571,11 @@ td.trabalho {
     background-color: #0d6efd;
 }
 
-.profile-role.common {
+.profile-role.supervisor {
+    background-color: #fd7e14;
+}
+
+.profile-role.analyst {
     background-color: #6c757d;
 }
 
@@ -1739,7 +1743,6 @@ td.trabalho {
 /* Centralização das ações */
 #analysts-table td:last-child {
     text-align: center;
-<<<<<<< HEAD
 }
 
 /* Password Input Component Styles */
@@ -1804,9 +1807,9 @@ td.trabalho {
     color: var(--text-dark);
 }
 
-/* ===========================================
+/* =
    ESTILOS MODERNOS PARA TELA DE LOGIN
-   =========================================== */
+   = */
 
 /* Reset global para login */
 body.login-active {
@@ -2315,9 +2318,9 @@ body.login-active {
     color: #718096;
 }
 
-/* ===========================================
+/* =
    ESTILOS DO DASHBOARD
-   =========================================== */
+   = */
 
 .dashboard-container {
     padding: 24px;
@@ -2813,6 +2816,419 @@ body.login-active {
 
 [data-theme="dark"] .shift-bar {
     background: #4b5563;
-=======
->>>>>>> 3a7d2720fca6b866ea98c218f4404af359e27906
+}
+
+/* Estilos para Modal de Configurações Melhorado */
+.setting-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem;
+    border-bottom: 1px solid var(--border-color);
+    transition: background-color 0.2s ease;
+}
+
+.setting-item:hover {
+    background-color: var(--nav-active-bg);
+}
+
+.setting-item:last-child {
+    border-bottom: none;
+}
+
+.setting-label {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-weight: 500;
+    color: var(--text);
+}
+
+.setting-label i {
+    color: var(--btn-primary-bg);
+    width: 20px;
+}
+
+.user-info {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.5rem;
+}
+
+.user-details {
+    margin-top: 0.5rem;
+    padding: 0.5rem;
+    background-color: var(--nav-active-bg);
+    border-radius: 4px;
+    width: 100%;
+}
+
+.user-details p {
+    margin: 0.25rem 0;
+    font-size: 0.9rem;
+}
+
+/* Switch Toggle */
+.switch {
+    position: relative;
+    display: inline-block;
+    width: 50px;
+    height: 24px;
+}
+
+.switch input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+
+.slider {
+    position: absolute;
+    cursor: pointer;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: var(--btn-secondary-bg);
+    transition: 0.3s;
+    border-radius: 24px;
+}
+
+.slider:before {
+    position: absolute;
+    content: "";
+    height: 18px;
+    width: 18px;
+    left: 3px;
+    bottom: 3px;
+    background-color: white;
+    transition: 0.3s;
+    border-radius: 50%;
+}
+
+input:checked + .slider {
+    background-color: var(--btn-primary-bg);
+}
+
+input:checked + .slider:before {
+    transform: translateX(26px);
+}
+
+/* Language Select */
+.language-select {
+    padding: 0.5rem;
+    border: 1px solid var(--input-border);
+    border-radius: 4px;
+    background-color: var(--input-bg);
+    color: var(--input-text);
+    font-size: 0.9rem;
+    min-width: 150px;
+}
+
+.language-select:focus {
+    outline: none;
+    border-color: var(--btn-primary-bg);
+    box-shadow: 0 0 0 2px rgba(13, 110, 253, 0.25);
+}
+
+/* Settings Footer */
+.settings-footer {
+    margin-top: 1rem;
+    padding-top: 1rem;
+    border-top: 1px solid var(--border-color);
+    text-align: center;
+}
+
+.settings-footer .btn {
+    min-width: 150px;
+}
+
+/* Theme Toggle Button */
+.theme-toggle-modal {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 1rem;
+    border: 1px solid var(--btn-primary-bg);
+    background-color: transparent;
+    color: var(--btn-primary-bg);
+    border-radius: 4px;
+    transition: all 0.2s ease;
+}
+
+.theme-toggle-modal:hover {
+    background-color: var(--btn-primary-bg);
+    color: white;
+}
+
+.theme-toggle-modal i {
+    font-size: 1rem;
+}
+
+/* Botão Secundário */
+.btn-secondary {
+    background-color: var(--btn-secondary-bg);
+    color: white;
+    border: none;
+    padding: 0.5rem 1rem;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.btn-secondary:hover {
+    background-color: var(--btn-secondary-hover);
+}
+
+/* Responsividade para Modal de Configurações */
+@media (max-width: 600px) {
+    .setting-item {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.5rem;
+    }
+    
+    .setting-label {
+        width: 100%;
+    }
+    
+    .language-select {
+        width: 100%;
+        min-width: auto;
+    }
+}
+
+/* Estilos para EscalaTable */
+.escala-container {
+    padding: 1rem;
+    max-width: 100%;
+    overflow-x: auto;
+}
+
+.escala-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 2rem;
+    flex-wrap: wrap;
+    gap: 1rem;
+}
+
+.escala-header h2 {
+    margin: 0;
+    color: var(--text);
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.escala-controls {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    flex-wrap: wrap;
+}
+
+.mes-selector {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.mes-selector label {
+    font-weight: 500;
+    color: var(--text);
+}
+
+.mes-selector input {
+    padding: 0.5rem;
+    border: 1px solid var(--input-border);
+    border-radius: 4px;
+    background-color: var(--input-bg);
+    color: var(--input-text);
+}
+
+.escala-actions {
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+}
+
+.escala-actions .btn {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 1rem;
+    font-size: 0.9rem;
+}
+
+.welcome-message {
+    text-align: center;
+    padding: 3rem 1rem;
+    background-color: var(--card);
+    border-radius: 8px;
+    border: 2px dashed var(--border-color);
+}
+
+.welcome-content {
+    max-width: 400px;
+    margin: 0 auto;
+}
+
+.welcome-content i {
+    font-size: 3rem;
+    color: var(--btn-primary-bg);
+    margin-bottom: 1rem;
+}
+
+.welcome-content h3 {
+    margin: 1rem 0;
+    color: var(--text);
+}
+
+.welcome-content p {
+    color: var(--text);
+    opacity: 0.8;
+}
+
+.escala-tables {
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
+}
+
+.turno-table-container {
+    background-color: var(--card);
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 2px 4px var(--shadow);
+}
+
+.turno-header {
+    padding: 1rem;
+    color: white;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.turno-header h3 {
+    margin: 0;
+    font-size: 1.2rem;
+}
+
+.turno-horario {
+    font-size: 0.9rem;
+    opacity: 0.9;
+}
+
+.table-responsive {
+    overflow-x: auto;
+}
+
+.escala-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.9rem;
+}
+
+.escala-table th,
+.escala-table td {
+    padding: 0.5rem;
+    text-align: center;
+    border: 1px solid var(--border-color);
+}
+
+.escala-table th {
+    background-color: var(--header-table-bg);
+    color: var(--header-table-text);
+    font-weight: 600;
+    position: sticky;
+    top: 0;
+    z-index: 10;
+}
+
+.escala-table td {
+    background-color: var(--card);
+    color: var(--text);
+}
+
+.escala-table .analista-name {
+    background-color: var(--nav-active-bg);
+    font-weight: 500;
+    text-align: left;
+    min-width: 120px;
+}
+
+.escala-table .dia-celula {
+    min-width: 30px;
+    font-weight: 500;
+}
+
+.escala-table .dia-celula:contains('T') {
+    background-color: #d4edda;
+    color: #155724;
+}
+
+.escala-table .dia-celula:contains('F') {
+    background-color: #f8d7da;
+    color: #721c24;
+}
+
+.no-data-message {
+    text-align: center;
+    padding: 3rem 1rem;
+    background-color: var(--card);
+    border-radius: 8px;
+    border: 2px dashed var(--border-color);
+}
+
+.no-data-message i {
+    font-size: 3rem;
+    color: #ffc107;
+    margin-bottom: 1rem;
+}
+
+.no-data-message h3 {
+    margin: 1rem 0;
+    color: var(--text);
+}
+
+.no-data-message p {
+    color: var(--text);
+    opacity: 0.8;
+}
+
+/* Responsividade para EscalaTable */
+@media (max-width: 768px) {
+    .escala-header {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+    
+    .escala-controls {
+        width: 100%;
+        justify-content: space-between;
+    }
+    
+    .escala-actions {
+        flex-wrap: wrap;
+    }
+    
+    .escala-actions .btn {
+        font-size: 0.8rem;
+        padding: 0.4rem 0.8rem;
+    }
+    
+    .escala-table {
+        font-size: 0.8rem;
+    }
+    
+    .escala-table th,
+    .escala-table td {
+        padding: 0.3rem;
+    }
 }

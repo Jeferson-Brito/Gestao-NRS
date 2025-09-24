@@ -100,22 +100,6 @@ const Dashboard = ({ analistas = [], turnos = {}, eventos = [], user }) => {
                         Aqui está um resumo da sua equipe NRS
                     </p>
                 </div>
-                <div className="current-time">
-                    <div className="time-display">
-                        {new Date().toLocaleTimeString('pt-BR', {
-                            hour: '2-digit',
-                            minute: '2-digit'
-                        })}
-                    </div>
-                    <div className="date-display">
-                        {new Date().toLocaleDateString('pt-BR', {
-                            weekday: 'long',
-                            year: 'numeric',
-                            month: 'long',
-                            day: 'numeric'
-                        })}
-                    </div>
-                </div>
             </div>
 
             {/* Cards de Estatísticas */}
@@ -315,4 +299,11 @@ const Dashboard = ({ analistas = [], turnos = {}, eventos = [], user }) => {
 };
 
 export default Dashboard;
+
+
+
+
+
+
+
 
