@@ -254,6 +254,6 @@ Este projeto está sob a licença **MIT**. Veja o arquivo [LICENSE](LICENSE) par
 
 **Desenvolvido com ❤️ por [Jeferson Brito](https://github.com/Jeferson-Brito)**
 
-*© 2024 Nexus - Smart Management Solutions. Todos os direitos reservados.*
+*© 2025 Nexus - Smart Management Solutions. Todos os direitos reservados.*
 
 </div>
